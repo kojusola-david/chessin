@@ -41,7 +41,7 @@ const start = async () => {
         })
 
         io.on('connection', (socket) => {
-            console.log(`Socket connected: ${socket.id}`)
+            fastify.log.info(`User joined: ${socket.id}`)
 
             socket.on('message', message => {
                 console.log(`${message.sender} said ${message.message}`);
