@@ -10,7 +10,11 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "baseUrl": ".",
+    "paths": {
+      "@chessin/shared": ["../shared/index.ts"]
+    }
   },
   "include": ["/**/*"]
 }

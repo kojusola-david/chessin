@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import { Server } from "socket.io";
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { Type, Static } from "@sinclair/typebox";
+import { GameState } from '@chessin/shared';
 
 // --- Schemas ---
 const MessageSchema = Type.Object({

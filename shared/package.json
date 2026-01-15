@@ -1,0 +1,8 @@
+{
+  "name": "@chessin/shared",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "dependencies": {
+    "@sinclair/typebox": "^0.34.47" 
+  }
+}

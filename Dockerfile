@@ -1,24 +1,22 @@
-# Dev notes: No idea how all this docker stuff works yet. Added to stuff I need to learn 😮‍💨
-
-FROM node:20-slim
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files from the backend directory
+# 1. Copy and install the shared folder
+COPY shared /shared
+RUN cd /shared && npm install
+
+# 2. Copy backend config
 COPY backend/package*.json ./backend/
+RUN cd backend && npm install
 
-# Change directory to backend to install dependencies
-WORKDIR /app/backend
-RUN npm install
+# 3. Link the shared types to the backend
+RUN cd backend && npm link /shared
 
-# Go back to /app and copy everything
-WORKDIR /app
+# 4. Copy everything else
 COPY . .
 
-# Build from the backend directory
 WORKDIR /app/backend
 RUN npm run build
-
 EXPOSE 3000
-
 CMD ["npm", "start"]
