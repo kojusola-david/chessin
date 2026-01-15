@@ -2,6 +2,7 @@
   "name": "@chessin/shared",
   "version": "1.0.0",
   "main": "index.ts",
+  "type": "module",
   "dependencies": {
     "@sinclair/typebox": "^0.34.47" 
   }
