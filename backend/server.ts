@@ -2,7 +2,9 @@ import Fastify from "fastify";
 import { Server } from "socket.io";
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { Type, Static } from "@sinclair/typebox";
-import { Color, GameState, MoveRequest, ServerEvent, PieceType } from '@chessin/shared';
+import { handleMove } from "controllers/moveController.js";
+import { handleJoinRoom } from "controllers/roomController.js";
+import { handleDisconnect } from "controllers/disconnectController.js"
 
 // --- Schemas ---
 const MessageSchema = Type.Object({
@@ -43,7 +45,17 @@ const start = async () => {
 
         io.on('connection', (socket) => {
             fastify.log.info(`User joined: ${socket.id}`)
+            setTimeout(() => {
+        console.log("Sending hi to", socket.id);
+        socket.emit("hi");
+    }, 1000);
 
+            socket.on('joinRoom', (roomId) => handleJoinRoom(socket, io, roomId));
+
+            socket.on('makeMove', (payload) => handleMove(socket, io, payload));
+
+            socket.on('disconnect', () => handleDisconnect(socket, io));
+                
             socket.on('message', message => {
                 console.log(`${message.sender} said ${message.message}`);
                 
