@@ -1,6 +1,18 @@
 import { Socket, Server } from 'socket.io';
 import { GameManager } from '../services/GameManager.js';
 
+interface GameSyncPayload {
+  fen: string; // Current board position
+  turn: 'w' | 'b'; // Whose turn it is
+  playerRole: 'w' | 'b'; // The role assigned to the rejoining socket
+  history: string[]; // Array of moves made so far (e.g., ["e4", "e5", "Nf3"])
+  isGameOver: boolean; // Whether the match is still active
+  roomConfig: {
+    whitePlayerId: string;
+    blackPlayerId: string;
+  };
+}
+
 export const handleJoinRoom = (socket: Socket, io: Server, roomId: string) => {
   const gameManager = GameManager.getInstance();
   let session = gameManager.getSession(roomId);
@@ -8,23 +20,53 @@ export const handleJoinRoom = (socket: Socket, io: Server, roomId: string) => {
   if (!session) {
     // If room is empty, this user becomes White
     session = gameManager.createSession(roomId, socket.id);
-  } else {
-    // If room has people, this user tries to become Black
+    socket.join(roomId);
+  } else if (!session.blackId && socket.id !== session.whiteId) {
+    // 2. Second player joins (Black)
     session = gameManager.joinGame(roomId, socket.id);
+    socket.join(roomId);
+
+    io.to(roomId).emit('gameStart', {
+      fen: session?.game.fen(),
+      whiteId: session?.whiteId,
+      blackId: session?.blackId,
+    });
+
+    socket.emit('gameSync', {
+      fen: session?.game.fen(),
+      turn: session?.game.turn(),
+      playerRole: session?.whiteId === socket.id ? 'w' : 'b',
+      history: session?.game.history(),
+      isGameOver: session?.game.isGameOver(),
+    });
+  } else {
+    // 3. Reconnection Logic
+    // Check if this socket (or better, a persistent ID) matches a player already in the session
+    const isWhite = socket.id === session.whiteId;
+    const isBlack = socket.id === session.blackId;
+
+    if (isWhite || isBlack) {
+      socket.join(roomId);
+      socket.emit('gameSync', {
+        fen: session.game.fen(),
+        turn: session.game.turn(),
+        playerRole: isWhite ? 'w' : 'b',
+        history: session.game.history(),
+        isGameOver: session.game.isGameOver(),
+        roomConfig: {
+          whitePlayerId: session.whiteId,
+          blackPlayerId: session.blackId,
+        },
+      });
+    } else {
+      socket.emit('error', 'Room is full'); // Handle spectators later
+    }
   }
 
-  socket.join(roomId);
   console.log('Room Id: ', roomId);
 
-  // Determine user role for logging or custom UI
-  const role =
-    socket.id === session?.whiteId
-      ? 'White'
-      : socket.id === session?.blackId
-        ? 'Black'
-        : 'Spectator';
-
-  socket.emit('role', role); // Tell the frontend who they are
-  io.to(roomId).emit('join', `Player ${socket.id} joined as ${role}`);
-  console.log(session);
+  console.log({
+    blackId: session?.blackId,
+    whiteId: session?.whiteId,
+  });
 };
