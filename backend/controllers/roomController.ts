@@ -14,16 +14,20 @@ interface GameSyncPayload {
 }
 
 export const handleJoinRoom = (socket: Socket, io: Server, roomId: string) => {
+  const userId = socket.handshake.auth.userId;
   const gameManager = GameManager.getInstance();
   let session = gameManager.getSession(roomId);
 
+  const isWhite = userId === session?.whiteId;
+  const isBlack = userId === session?.blackId;
+
   if (!session) {
     // If room is empty, this user becomes White
-    session = gameManager.createSession(roomId, socket.id);
+    session = gameManager.createSession(roomId, userId);
     socket.join(roomId);
-  } else if (!session.blackId && socket.id !== session.whiteId) {
+  } else if (!session.blackId && userId !== session.whiteId) {
     // 2. Second player joins (Black)
-    session = gameManager.joinGame(roomId, socket.id);
+    session = gameManager.joinGame(roomId, userId);
     socket.join(roomId);
 
     io.to(roomId).emit('gameStart', {
@@ -35,15 +39,15 @@ export const handleJoinRoom = (socket: Socket, io: Server, roomId: string) => {
     socket.emit('gameSync', {
       fen: session?.game.fen(),
       turn: session?.game.turn(),
-      playerRole: session?.whiteId === socket.id ? 'w' : 'b',
+      playerRole: session?.whiteId === userId ? 'w' : 'b',
       history: session?.game.history(),
       isGameOver: session?.game.isGameOver(),
     });
   } else {
     // 3. Reconnection Logic
     // Check if this socket (or better, a persistent ID) matches a player already in the session
-    const isWhite = socket.id === session.whiteId;
-    const isBlack = socket.id === session.blackId;
+    const isWhite = userId === session.whiteId;
+    const isBlack = userId === session.blackId;
 
     if (isWhite || isBlack) {
       socket.join(roomId);
