@@ -4,6 +4,6 @@
   "main": "index.ts",
   "type": "module",
   "dependencies": {
-    "@sinclair/typebox": "^0.34.47" 
+    "@sinclair/typebox": "^0.34.47"
   }
 }

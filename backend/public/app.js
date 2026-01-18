@@ -1,2 +1,1 @@
-
-let board1 = Chessboard('board1', 'start')
+let board1 = Chessboard('board1', 'start');

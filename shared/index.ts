@@ -8,8 +8,12 @@ export type Color = Static<typeof ColorSchema>;
 
 //2. Pieces: Pawn(p), Knight(k), Bishop(b), Rook(r), Queen(q), King(k)
 export const PieceTypeSchema = Type.Union([
-  Type.Literal('p'), Type.Literal('n'), Type.Literal('b'), 
-  Type.Literal('r'), Type.Literal('q'), Type.Literal('k')
+  Type.Literal('p'),
+  Type.Literal('n'),
+  Type.Literal('b'),
+  Type.Literal('r'),
+  Type.Literal('q'),
+  Type.Literal('k'),
 ]);
 export type PieceType = Static<typeof PieceTypeSchema>;
 
@@ -21,15 +25,14 @@ export const MoveRequestSchema = Type.Object({
 });
 export type MoveRequest = Static<typeof MoveRequestSchema>;
 
-
 //4. Game state object containing the game info
 export const GameStateSchema = Type.Object({
-  fen: Type.String(),             // Current board position
-  turn: ColorSchema,              // Whose turn it is
+  fen: Type.String(), // Current board position
+  turn: ColorSchema, // Whose turn it is
   isCheck: Type.Boolean(),
   isGameOver: Type.Boolean(),
   history: Type.Array(Type.String()), // SAN notation (e.g., ["e4", "e5", "Nf3"])
-  lastMove: Type.Optional(MoveRequestSchema)
+  lastMove: Type.Optional(MoveRequestSchema),
 });
 export type GameState = Static<typeof GameStateSchema>;
 

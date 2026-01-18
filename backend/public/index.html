@@ -1,28 +1,30 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Chessboard.js Basic Setup</title>
-    <link rel="stylesheet"
-      href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
-</head>
-<body>
-
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"
+    />
+  </head>
+  <body>
     <div id="myBoard" style="width: 400px"></div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
 
     <script>
-        // 4. Initialize the board
-        var config = {
-            position: 'start',
-            draggable: true, // Allows pieces to be moved
-            dropOffBoard: 'snapback', // Returns piece to square if dropped outside
-            sparePieces: false,
-            pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
-        }
-        var board = Chessboard('myBoard', config)
+      // 4. Initialize the board
+      var config = {
+        position: 'start',
+        draggable: true, // Allows pieces to be moved
+        dropOffBoard: 'snapback', // Returns piece to square if dropped outside
+        sparePieces: false,
+        pieceTheme:
+          'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+      };
+      var board = Chessboard('myBoard', config);
     </script>
-</body>
+  </body>
 </html>
