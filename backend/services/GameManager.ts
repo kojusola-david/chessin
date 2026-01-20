@@ -30,28 +30,28 @@ export class GameManager {
     return this.games.get(roomId);
   }
 
-  public createSession(roomId: string, whiteSocketId: string): GameSession {
+  public createSession(roomId: string, userId: string): GameSession {
     const newSession: GameSession = {
       game: new Chess(),
-      whiteId: whiteSocketId,
+      whiteId: userId,
     };
     this.games.set(roomId, newSession);
     return newSession;
   }
 
-  public joinGame(roomId: string, socketId: string): GameSession | undefined {
+  public joinGame(roomId: string, userId: string): GameSession | undefined {
     const session = this.getSession(roomId);
 
     if (session) {
       // 1. Prevent the White player from also becoming the Black player
-      if (session.whiteId === socketId) {
+      if (session.whiteId === userId) {
         return session;
       }
 
       // 2. Assign Black only if the seat is empty
       if (!session.blackId) {
-        session.blackId = socketId;
-        console.log(`Player ${socketId} joined as Black in room ${roomId}`);
+        session.blackId = userId;
+        console.log(`Player ${userId} joined as Black in room ${roomId}`);
       }
 
       // 3. If someone else joins now, they are just a spectator
@@ -60,7 +60,7 @@ export class GameManager {
     return undefined;
   }
 
-  public getSessionBySocketId(
+  public getSessionByUserId(
     socketId: string
   ): { roomId: string; session: GameSession } | undefined {
     for (const [roomId, session] of this.games.entries()) {

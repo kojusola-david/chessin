@@ -18,28 +18,30 @@ export const handleJoinRoom = (socket: Socket, io: Server, roomId: string) => {
   const gameManager = GameManager.getInstance();
   let session = gameManager.getSession(roomId);
 
-  const isWhite = userId === session?.whiteId;
-  const isBlack = userId === session?.blackId;
-
   if (!session) {
     // If room is empty, this user becomes White
     session = gameManager.createSession(roomId, userId);
     socket.join(roomId);
+    socket.emit('role', 'White')
   } else if (!session.blackId && userId !== session.whiteId) {
     // 2. Second player joins (Black)
     session = gameManager.joinGame(roomId, userId);
     socket.join(roomId);
+    socket.emit('role', 'Black')
 
-    io.to(roomId).emit('gameStart', {
-      fen: session?.game.fen(),
-      whiteId: session?.whiteId,
-      blackId: session?.blackId,
-    });
 
-    socket.emit('gameSync', {
+    // io.to(roomId).emit('gameStart', {
+    //   fen: session?.game.fen(),
+    //   whiteId: session?.whiteId,
+    //   blackId: session?.blackId,
+    // });
+
+    io.to(roomId).emit('gameSync', {
       fen: session?.game.fen(),
       turn: session?.game.turn(),
-      playerRole: session?.whiteId === userId ? 'w' : 'b',
+      whiteId: session?.whiteId,
+      blackId: session?.blackId,
+      // playerRole: session?.whiteId === userId ? 'w' : 'b',
       history: session?.game.history(),
       isGameOver: session?.game.isGameOver(),
     });
