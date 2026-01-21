@@ -22,13 +22,12 @@ export const handleJoinRoom = (socket: Socket, io: Server, roomId: string) => {
     // If room is empty, this user becomes White
     session = gameManager.createSession(roomId, userId);
     socket.join(roomId);
-    socket.emit('role', 'White')
+    socket.emit('role', 'White');
   } else if (!session.blackId && userId !== session.whiteId) {
     // 2. Second player joins (Black)
     session = gameManager.joinGame(roomId, userId);
     socket.join(roomId);
-    socket.emit('role', 'Black')
-
+    socket.emit('role', 'Black');
 
     // io.to(roomId).emit('gameStart', {
     //   fen: session?.game.fen(),

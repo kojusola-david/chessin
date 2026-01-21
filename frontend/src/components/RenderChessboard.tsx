@@ -93,6 +93,8 @@ export default function RenderChessBoard({ socket, roomId }: props) {
     });
 
     socket.on('gameSync', (payload) => {
+      console.log('Game sync!', payload);
+
       // Re-sync engine and UI
       game.current.load(payload.fen);
       setChessPosition(game.current.fen());
@@ -102,19 +104,19 @@ export default function RenderChessBoard({ socket, roomId }: props) {
       else if (payload.playerRole === 'b') setPlayerColor('b');
     });
 
-    socket.on('gameStart', (data) => {
-      console.log('Game is starting!', data);
-      // Even if the first player already has a role,
-      // this event confirms the opponent is here.
-      game.current.load(data.fen);
-      setChessPosition(game.current.fen());
-    });
+    // socket.on('gameStart', (data) => {
+    //   console.log('Game is starting!', data);
+    //   // Even if the first player already has a role,
+    //   // this event confirms the opponent is here.
+    //   game.current.load(data.fen);
+    //   setChessPosition(game.current.fen());
+    // });
 
     return () => {
       socket.off('role');
       socket.off('gameUpdate');
       socket.off('gameSync');
-      socket.off('gameStart');
+      // socket.off('gameStart');
     };
   }, [socket]); // Add socket to dependency array
 
