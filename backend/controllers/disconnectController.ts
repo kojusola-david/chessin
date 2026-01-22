@@ -2,8 +2,9 @@ import { Socket, Server } from 'socket.io';
 import { GameManager } from '../services/GameManager.js';
 
 export const handleDisconnect = (socket: Socket, io: Server) => {
+  const userId = socket.handshake.auth.userId;
   const gameManager = GameManager.getInstance();
-  const result = gameManager.getSessionBySocketId(socket.id);
+  const result = gameManager.getSessionByUserId(userId);
 
   if (result) {
     const { roomId, session } = result;
@@ -21,8 +22,8 @@ export const handleDisconnect = (socket: Socket, io: Server) => {
       // If the player is still missing from the room, clean up
       if (
         currentSession &&
-        (currentSession.whiteId === socket.id ||
-          currentSession.blackId === socket.id)
+        (currentSession.whiteId === userId ||
+          currentSession.blackId === userId)
       ) {
         // Check if they are actually gone (not reconnected with a new ID)
         // For a basic setup, we'll just remove the game to save memory
