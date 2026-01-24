@@ -40,6 +40,7 @@ enum Result {
 model Player {
   id                  String          @id @default(uuid(7)) @db.Uuid
   username            String          @unique
+  password_hash       String
   name                String?
   email               String          @unique
   currentRapidRating  Int

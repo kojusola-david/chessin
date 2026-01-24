@@ -5,6 +5,14 @@ import { Type, Static } from '@sinclair/typebox';
 import { handleMove } from 'controllers/moveController.js';
 import { handleJoinRoom } from 'controllers/roomController.js';
 import { handleDisconnect } from 'controllers/disconnectController.js';
+import handleLogin from 'controllers/loginController';
+import handleSignUp from 'controllers/signUpController';
+import jwt from 'jsonwebtoken';
+import fastifyCookie from '@fastify/cookie';
+import cors from '@fastify/cors';
+import cookie from 'cookie';
+import prisma from 'services/Prisma';
+import 'dotenv/config'
 
 // --- Schemas ---
 const MessageSchema = Type.Object({
@@ -20,6 +28,16 @@ const fastify = Fastify({
   logger: true,
 }).withTypeProvider<TypeBoxTypeProvider>();
 
+await fastify.register(cors, {
+  origin: 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+});
+
+await fastify.register(fastifyCookie, {
+  secret: process.env.COOKIE_SECRET
+});
+
 fastify.get(
   '/',
   {
@@ -34,19 +52,97 @@ fastify.get(
   }
 );
 
+fastify.get('/auth/me', async (req, res) => {
+  const token = req.cookies.chessin_sid;
+
+  if (!token) return res.status(401).send({ message: "Not logged in" });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    
+    // Fetch fresh user data from Prisma if you want, or just return decoded info
+    const user = await prisma.player.findUnique({ 
+        where: { id: decoded.userId },
+        select: { id: true, username: true, currentRapidRating: true } 
+    });
+
+    return res.send(user);
+  } catch (err) {
+    return res.status(401).send({ message: "Invalid session" });
+  }
+});
+
+fastify.post('/login', handleLogin);
+fastify.post('/register', handleSignUp)
+
 const start = async () => {
   try {
     await fastify.ready();
 
     const io = new Server(fastify.server, {
       cors: {
-        origin: '*',
-        methods: ['GET', 'POST'],
+        origin: 'http://localhost:5173',
+        credentials: true,
       },
     });
+    io.use((socket, next) => {
+    // 1. Parse the cookie header from the handshake
+    const header = socket.handshake.headers.cookie;
+    
+    if (!header) {
+        return next(new Error("No cookie found. Please log in."));
+    }
 
+    const cookies = cookie.parse(header);
+    const token = cookies.chessin_sid; // The name you used in res.cookie()
+
+    if (!token) {
+        return next(new Error("Authentication token missing."));
+    }
+
+    try {
+        // 2. Verify the JWT
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+        
+        // 3. Attach the REAL identity to the socket
+        socket.data.userId = decoded.userId;
+        socket.data.username = decoded.username;
+        
+        next();
+    } catch (err) {
+        next(new Error("Invalid session. Please log in again."));
+    }
+});
+io.use((socket, next) => {
+    // 1. Parse the cookie header from the handshake
+    const header = socket.handshake.headers.cookie;
+    
+    if (!header) {
+        return next(new Error("No cookie found. Please log in."));
+    }
+
+    const cookies = cookie.parse(header);
+    const token = cookies.chessin_sid; // The name you used in res.cookie()
+
+    if (!token) {
+        return next(new Error("Authentication token missing."));
+    }
+
+    try {
+        // 2. Verify the JWT
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+        
+        // 3. Attach the REAL identity to the socket
+        socket.data.userId = decoded.userId;
+        socket.data.username = decoded.username;
+        
+        next();
+    } catch (err) {
+        next(new Error("Invalid session. Please log in again."));
+    }
+});
     io.on('connection', (socket) => {
-      fastify.log.info(`User joined: ${socket.id}`);
+      console.log(`User ${socket.data.username} joined with ID: ${socket.data.userId}`);
       setTimeout(() => {
         console.log('Sending hi to', socket.id);
         socket.emit('hi');

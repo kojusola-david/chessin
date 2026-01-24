@@ -41,6 +41,7 @@ export type PlayerSumAggregateOutputType = {
 export type PlayerMinAggregateOutputType = {
   id: string | null
   username: string | null
+  password_hash: string | null
   name: string | null
   email: string | null
   currentRapidRating: number | null
@@ -52,6 +53,7 @@ export type PlayerMinAggregateOutputType = {
 export type PlayerMaxAggregateOutputType = {
   id: string | null
   username: string | null
+  password_hash: string | null
   name: string | null
   email: string | null
   currentRapidRating: number | null
@@ -63,6 +65,7 @@ export type PlayerMaxAggregateOutputType = {
 export type PlayerCountAggregateOutputType = {
   id: number
   username: number
+  password_hash: number
   name: number
   email: number
   currentRapidRating: number
@@ -88,6 +91,7 @@ export type PlayerSumAggregateInputType = {
 export type PlayerMinAggregateInputType = {
   id?: true
   username?: true
+  password_hash?: true
   name?: true
   email?: true
   currentRapidRating?: true
@@ -99,6 +103,7 @@ export type PlayerMinAggregateInputType = {
 export type PlayerMaxAggregateInputType = {
   id?: true
   username?: true
+  password_hash?: true
   name?: true
   email?: true
   currentRapidRating?: true
@@ -110,6 +115,7 @@ export type PlayerMaxAggregateInputType = {
 export type PlayerCountAggregateInputType = {
   id?: true
   username?: true
+  password_hash?: true
   name?: true
   email?: true
   currentRapidRating?: true
@@ -208,6 +214,7 @@ export type PlayerGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 export type PlayerGroupByOutputType = {
   id: string
   username: string
+  password_hash: string
   name: string | null
   email: string
   currentRapidRating: number
@@ -242,6 +249,7 @@ export type PlayerWhereInput = {
   NOT?: Prisma.PlayerWhereInput | Prisma.PlayerWhereInput[]
   id?: Prisma.UuidFilter<"Player"> | string
   username?: Prisma.StringFilter<"Player"> | string
+  password_hash?: Prisma.StringFilter<"Player"> | string
   name?: Prisma.StringNullableFilter<"Player"> | string | null
   email?: Prisma.StringFilter<"Player"> | string
   currentRapidRating?: Prisma.IntFilter<"Player"> | number
@@ -256,6 +264,7 @@ export type PlayerWhereInput = {
 export type PlayerOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   username?: Prisma.SortOrder
+  password_hash?: Prisma.SortOrder
   name?: Prisma.SortOrderInput | Prisma.SortOrder
   email?: Prisma.SortOrder
   currentRapidRating?: Prisma.SortOrder
@@ -274,6 +283,7 @@ export type PlayerWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.PlayerWhereInput | Prisma.PlayerWhereInput[]
   OR?: Prisma.PlayerWhereInput[]
   NOT?: Prisma.PlayerWhereInput | Prisma.PlayerWhereInput[]
+  password_hash?: Prisma.StringFilter<"Player"> | string
   name?: Prisma.StringNullableFilter<"Player"> | string | null
   currentRapidRating?: Prisma.IntFilter<"Player"> | number
   currentBlitzrating?: Prisma.IntFilter<"Player"> | number
@@ -287,6 +297,7 @@ export type PlayerWhereUniqueInput = Prisma.AtLeast<{
 export type PlayerOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   username?: Prisma.SortOrder
+  password_hash?: Prisma.SortOrder
   name?: Prisma.SortOrderInput | Prisma.SortOrder
   email?: Prisma.SortOrder
   currentRapidRating?: Prisma.SortOrder
@@ -306,6 +317,7 @@ export type PlayerScalarWhereWithAggregatesInput = {
   NOT?: Prisma.PlayerScalarWhereWithAggregatesInput | Prisma.PlayerScalarWhereWithAggregatesInput[]
   id?: Prisma.UuidWithAggregatesFilter<"Player"> | string
   username?: Prisma.StringWithAggregatesFilter<"Player"> | string
+  password_hash?: Prisma.StringWithAggregatesFilter<"Player"> | string
   name?: Prisma.StringNullableWithAggregatesFilter<"Player"> | string | null
   email?: Prisma.StringWithAggregatesFilter<"Player"> | string
   currentRapidRating?: Prisma.IntWithAggregatesFilter<"Player"> | number
@@ -317,6 +329,7 @@ export type PlayerScalarWhereWithAggregatesInput = {
 export type PlayerCreateInput = {
   id?: string
   username: string
+  password_hash: string
   name?: string | null
   email: string
   currentRapidRating: number
@@ -331,6 +344,7 @@ export type PlayerCreateInput = {
 export type PlayerUncheckedCreateInput = {
   id?: string
   username: string
+  password_hash: string
   name?: string | null
   email: string
   currentRapidRating: number
@@ -345,6 +359,7 @@ export type PlayerUncheckedCreateInput = {
 export type PlayerUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   username?: Prisma.StringFieldUpdateOperationsInput | string
+  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.StringFieldUpdateOperationsInput | string
   currentRapidRating?: Prisma.IntFieldUpdateOperationsInput | number
@@ -359,6 +374,7 @@ export type PlayerUpdateInput = {
 export type PlayerUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   username?: Prisma.StringFieldUpdateOperationsInput | string
+  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.StringFieldUpdateOperationsInput | string
   currentRapidRating?: Prisma.IntFieldUpdateOperationsInput | number
@@ -373,6 +389,7 @@ export type PlayerUncheckedUpdateInput = {
 export type PlayerCreateManyInput = {
   id?: string
   username: string
+  password_hash: string
   name?: string | null
   email: string
   currentRapidRating: number
@@ -384,6 +401,7 @@ export type PlayerCreateManyInput = {
 export type PlayerUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   username?: Prisma.StringFieldUpdateOperationsInput | string
+  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.StringFieldUpdateOperationsInput | string
   currentRapidRating?: Prisma.IntFieldUpdateOperationsInput | number
@@ -395,6 +413,7 @@ export type PlayerUpdateManyMutationInput = {
 export type PlayerUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   username?: Prisma.StringFieldUpdateOperationsInput | string
+  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.StringFieldUpdateOperationsInput | string
   currentRapidRating?: Prisma.IntFieldUpdateOperationsInput | number
@@ -406,6 +425,7 @@ export type PlayerUncheckedUpdateManyInput = {
 export type PlayerCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   username?: Prisma.SortOrder
+  password_hash?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
   currentRapidRating?: Prisma.SortOrder
@@ -423,6 +443,7 @@ export type PlayerAvgOrderByAggregateInput = {
 export type PlayerMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   username?: Prisma.SortOrder
+  password_hash?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
   currentRapidRating?: Prisma.SortOrder
@@ -434,6 +455,7 @@ export type PlayerMaxOrderByAggregateInput = {
 export type PlayerMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   username?: Prisma.SortOrder
+  password_hash?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
   currentRapidRating?: Prisma.SortOrder
@@ -518,6 +540,7 @@ export type PlayerUpdateOneRequiredWithoutRatingHistoryNestedInput = {
 export type PlayerCreateWithoutGamesAsWhiteInput = {
   id?: string
   username: string
+  password_hash: string
   name?: string | null
   email: string
   currentRapidRating: number
@@ -531,6 +554,7 @@ export type PlayerCreateWithoutGamesAsWhiteInput = {
 export type PlayerUncheckedCreateWithoutGamesAsWhiteInput = {
   id?: string
   username: string
+  password_hash: string
   name?: string | null
   email: string
   currentRapidRating: number
@@ -549,6 +573,7 @@ export type PlayerCreateOrConnectWithoutGamesAsWhiteInput = {
 export type PlayerCreateWithoutGamesAsBlackInput = {
   id?: string
   username: string
+  password_hash: string
   name?: string | null
   email: string
   currentRapidRating: number
@@ -562,6 +587,7 @@ export type PlayerCreateWithoutGamesAsBlackInput = {
 export type PlayerUncheckedCreateWithoutGamesAsBlackInput = {
   id?: string
   username: string
+  password_hash: string
   name?: string | null
   email: string
   currentRapidRating: number
@@ -591,6 +617,7 @@ export type PlayerUpdateToOneWithWhereWithoutGamesAsWhiteInput = {
 export type PlayerUpdateWithoutGamesAsWhiteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   username?: Prisma.StringFieldUpdateOperationsInput | string
+  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.StringFieldUpdateOperationsInput | string
   currentRapidRating?: Prisma.IntFieldUpdateOperationsInput | number
@@ -604,6 +631,7 @@ export type PlayerUpdateWithoutGamesAsWhiteInput = {
 export type PlayerUncheckedUpdateWithoutGamesAsWhiteInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   username?: Prisma.StringFieldUpdateOperationsInput | string
+  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.StringFieldUpdateOperationsInput | string
   currentRapidRating?: Prisma.IntFieldUpdateOperationsInput | number
@@ -628,6 +656,7 @@ export type PlayerUpdateToOneWithWhereWithoutGamesAsBlackInput = {
 export type PlayerUpdateWithoutGamesAsBlackInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   username?: Prisma.StringFieldUpdateOperationsInput | string
+  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.StringFieldUpdateOperationsInput | string
   currentRapidRating?: Prisma.IntFieldUpdateOperationsInput | number
@@ -641,6 +670,7 @@ export type PlayerUpdateWithoutGamesAsBlackInput = {
 export type PlayerUncheckedUpdateWithoutGamesAsBlackInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   username?: Prisma.StringFieldUpdateOperationsInput | string
+  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.StringFieldUpdateOperationsInput | string
   currentRapidRating?: Prisma.IntFieldUpdateOperationsInput | number
@@ -654,6 +684,7 @@ export type PlayerUncheckedUpdateWithoutGamesAsBlackInput = {
 export type PlayerCreateWithoutRatingHistoryInput = {
   id?: string
   username: string
+  password_hash: string
   name?: string | null
   email: string
   currentRapidRating: number
@@ -667,6 +698,7 @@ export type PlayerCreateWithoutRatingHistoryInput = {
 export type PlayerUncheckedCreateWithoutRatingHistoryInput = {
   id?: string
   username: string
+  password_hash: string
   name?: string | null
   email: string
   currentRapidRating: number
@@ -696,6 +728,7 @@ export type PlayerUpdateToOneWithWhereWithoutRatingHistoryInput = {
 export type PlayerUpdateWithoutRatingHistoryInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   username?: Prisma.StringFieldUpdateOperationsInput | string
+  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.StringFieldUpdateOperationsInput | string
   currentRapidRating?: Prisma.IntFieldUpdateOperationsInput | number
@@ -709,6 +742,7 @@ export type PlayerUpdateWithoutRatingHistoryInput = {
 export type PlayerUncheckedUpdateWithoutRatingHistoryInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   username?: Prisma.StringFieldUpdateOperationsInput | string
+  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.StringFieldUpdateOperationsInput | string
   currentRapidRating?: Prisma.IntFieldUpdateOperationsInput | number
@@ -771,6 +805,7 @@ export type PlayerCountOutputTypeCountRatingHistoryArgs<ExtArgs extends runtime.
 export type PlayerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   username?: boolean
+  password_hash?: boolean
   name?: boolean
   email?: boolean
   currentRapidRating?: boolean
@@ -786,6 +821,7 @@ export type PlayerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
 export type PlayerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   username?: boolean
+  password_hash?: boolean
   name?: boolean
   email?: boolean
   currentRapidRating?: boolean
@@ -797,6 +833,7 @@ export type PlayerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
 export type PlayerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   username?: boolean
+  password_hash?: boolean
   name?: boolean
   email?: boolean
   currentRapidRating?: boolean
@@ -808,6 +845,7 @@ export type PlayerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
 export type PlayerSelectScalar = {
   id?: boolean
   username?: boolean
+  password_hash?: boolean
   name?: boolean
   email?: boolean
   currentRapidRating?: boolean
@@ -816,7 +854,7 @@ export type PlayerSelectScalar = {
   createdAt?: boolean
 }
 
-export type PlayerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "username" | "name" | "email" | "currentRapidRating" | "currentBlitzrating" | "currentBulletRating" | "createdAt", ExtArgs["result"]["player"]>
+export type PlayerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "username" | "password_hash" | "name" | "email" | "currentRapidRating" | "currentBlitzrating" | "currentBulletRating" | "createdAt", ExtArgs["result"]["player"]>
 export type PlayerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   gamesAsWhite?: boolean | Prisma.Player$gamesAsWhiteArgs<ExtArgs>
   gamesAsBlack?: boolean | Prisma.Player$gamesAsBlackArgs<ExtArgs>
@@ -836,6 +874,7 @@ export type $PlayerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     username: string
+    password_hash: string
     name: string | null
     email: string
     currentRapidRating: number
@@ -1270,6 +1309,7 @@ export interface Prisma__PlayerClient<T, Null = never, ExtArgs extends runtime.T
 export interface PlayerFieldRefs {
   readonly id: Prisma.FieldRef<"Player", 'String'>
   readonly username: Prisma.FieldRef<"Player", 'String'>
+  readonly password_hash: Prisma.FieldRef<"Player", 'String'>
   readonly name: Prisma.FieldRef<"Player", 'String'>
   readonly email: Prisma.FieldRef<"Player", 'String'>
   readonly currentRapidRating: Prisma.FieldRef<"Player", 'Int'>
