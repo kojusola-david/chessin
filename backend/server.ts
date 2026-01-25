@@ -4,7 +4,7 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { Type, Static } from '@sinclair/typebox';
 import { handleMove } from 'controllers/moveController.js';
 import { handleJoinRoom } from 'controllers/roomController.js';
-import { handleDisconnect } from 'controllers/disconnectController.js';
+import { handleGameDisconnect } from 'controllers/disconnectController.js';
 import handleLogin from 'controllers/loginController';
 import handleSignUp from 'controllers/signUpController';
 import jwt from 'jsonwebtoken';
@@ -12,7 +12,9 @@ import fastifyCookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import cookie from 'cookie';
 import prisma from 'services/Prisma';
-import 'dotenv/config'
+import 'dotenv/config';
+import { PresenceService } from 'services/PresenceService';
+import { GameManager } from 'services/GameManager';
 
 // --- Schemas ---
 const MessageSchema = Type.Object({
@@ -31,11 +33,11 @@ const fastify = Fastify({
 await fastify.register(cors, {
   origin: 'http://localhost:5173',
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 });
 
 await fastify.register(fastifyCookie, {
-  secret: process.env.COOKIE_SECRET
+  secret: process.env.COOKIE_SECRET,
 });
 
 fastify.get(
@@ -55,25 +57,25 @@ fastify.get(
 fastify.get('/auth/me', async (req, res) => {
   const token = req.cookies.chessin_sid;
 
-  if (!token) return res.status(401).send({ message: "Not logged in" });
+  if (!token) return res.status(401).send({ message: 'Not logged in' });
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-    
+
     // Fetch fresh user data from Prisma if you want, or just return decoded info
-    const user = await prisma.player.findUnique({ 
-        where: { id: decoded.userId },
-        select: { id: true, username: true, currentRapidRating: true } 
+    const user = await prisma.player.findUnique({
+      where: { id: decoded.userId },
+      select: { id: true, username: true, currentRapidRating: true },
     });
 
     return res.send(user);
   } catch (err) {
-    return res.status(401).send({ message: "Invalid session" });
+    return res.status(401).send({ message: 'Invalid session' });
   }
 });
 
 fastify.post('/login', handleLogin);
-fastify.post('/register', handleSignUp)
+fastify.post('/register', handleSignUp);
 
 const start = async () => {
   try {
@@ -86,73 +88,89 @@ const start = async () => {
       },
     });
     io.use((socket, next) => {
-    // 1. Parse the cookie header from the handshake
-    const header = socket.handshake.headers.cookie;
-    
-    if (!header) {
-        return next(new Error("No cookie found. Please log in."));
-    }
+      // 1. Parse the cookie header from the handshake
+      const header = socket.handshake.headers.cookie;
 
-    const cookies = cookie.parse(header);
-    const token = cookies.chessin_sid; // The name you used in res.cookie()
+      if (!header) {
+        return next(new Error('No cookie found. Please log in.'));
+      }
 
-    if (!token) {
-        return next(new Error("Authentication token missing."));
-    }
+      const cookies = cookie.parse(header);
+      const token = cookies.chessin_sid; // The name you used in res.cookie()
 
-    try {
+      if (!token) {
+        return next(new Error('Authentication token missing.'));
+      }
+
+      try {
         // 2. Verify the JWT
         const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-        
+
         // 3. Attach the REAL identity to the socket
         socket.data.userId = decoded.userId;
         socket.data.username = decoded.username;
-        
+
         next();
-    } catch (err) {
-        next(new Error("Invalid session. Please log in again."));
-    }
-});
-io.use((socket, next) => {
-    // 1. Parse the cookie header from the handshake
-    const header = socket.handshake.headers.cookie;
-    
-    if (!header) {
-        return next(new Error("No cookie found. Please log in."));
-    }
+      } catch (err) {
+        next(new Error('Invalid session. Please log in again.'));
+      }
+    });
+    io.use((socket, next) => {
+      // 1. Parse the cookie header from the handshake
+      const header = socket.handshake.headers.cookie;
 
-    const cookies = cookie.parse(header);
-    const token = cookies.chessin_sid; // The name you used in res.cookie()
+      if (!header) {
+        return next(new Error('No cookie found. Please log in.'));
+      }
 
-    if (!token) {
-        return next(new Error("Authentication token missing."));
-    }
+      const cookies = cookie.parse(header);
+      const token = cookies.chessin_sid; // The name you used in res.cookie()
 
-    try {
+      if (!token) {
+        return next(new Error('Authentication token missing.'));
+      }
+
+      try {
         // 2. Verify the JWT
         const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-        
+
         // 3. Attach the REAL identity to the socket
         socket.data.userId = decoded.userId;
         socket.data.username = decoded.username;
-        
+
         next();
-    } catch (err) {
-        next(new Error("Invalid session. Please log in again."));
-    }
-});
+      } catch (err) {
+        next(new Error('Invalid session. Please log in again.'));
+      }
+    });
     io.on('connection', (socket) => {
-      console.log(`User ${socket.data.username} joined with ID: ${socket.data.userId}`);
+      console.log(
+        `User ${socket.data.username} joined with ID: ${socket.data.userId}`
+      );
       setTimeout(() => {
         console.log('Sending hi to', socket.id);
         socket.emit('hi');
       }, 1000);
 
+      const userId = socket.data.userId;
+      const presenceService = PresenceService.getInstance();
+      const gameManager = GameManager.getInstance();
+      presenceService.addUser(userId, socket.id);
+
       socket.on('joinRoom', (roomId) => handleJoinRoom(socket, io, roomId));
 
       socket.on('makeMove', (payload) => handleMove(socket, io, payload));
 
-      socket.on('disconnect', () => handleDisconnect(socket, io));
+      socket.on('disconnect', (reason) => {
+        presenceService.removeUser(userId, socket.id);
+
+        const gameSession = gameManager.getSessionByUserId(userId);
+        if (gameSession) {
+          handleGameDisconnect(socket, io);
+        }
+
+        console.log(`User ${userId} disconnected. Reason: ${reason}`);
+      });
 
       socket.on('message', (message) => {
         console.log(`${message.sender} said ${message.message}`);
