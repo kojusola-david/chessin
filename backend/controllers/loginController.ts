@@ -2,22 +2,25 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import prisma from 'services/Prisma';
 import 'dotenv/config';
+import { PresenceService } from 'services/PresenceService';
+
+const cookieOptions = {
+    path: '/',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+};
+
 
 async function handleLogin(req: any, res: any) {
     const { username, password } = req.body;
 
     try {
         const user = await prisma.player.findUnique({
-            where: { username: username }
+            where: { username }
         });
 
-        if (!user) {
-            return res.status(401).send({ message: "Invalid username or password" });
-        }
-
-        const isMatch = await bcrypt.compare(password, user.password_hash);
-
-        if (!isMatch) {
+        if (!user || !(await bcrypt.compare(password, user.password_hash))) {
             return res.status(401).send({ message: "Invalid username or password" });
         }
 
@@ -27,15 +30,12 @@ async function handleLogin(req: any, res: any) {
             { expiresIn: '7d' }
         );
 
-        res.setCookie('chessin_sid', token, {
-            path: '/',
-            httpOnly: true,
-            secure: false,
-            sameSite: 'strict',
-            maxAge: 604800000 // 7 days
+        res.setCookie('chessin_sid', token, { 
+            ...cookieOptions, 
+            maxAge: 604800000 
         });
 
-        res.status(200).send({
+        return res.status(200).send({
             message: "Login successful",
             user: {
                 id: user.id,
@@ -46,8 +46,25 @@ async function handleLogin(req: any, res: any) {
 
     } catch (error) {
         console.error("Login Error:", error);
-        res.status(500).send({ message: "Internal server error" });
+        return res.status(500).send({ message: "Internal server error" });
     }
 }
+
+async function handleLogOut(req: any, res: any){
+    const presenceService = PresenceService.getInstance()
+    const userId = req.user.id
+    const userSessions = presenceService.getUser(userId);
+    if(!userSessions) return
+        userSessions.forEach(socketId => {
+            req.server.io.sockets.sockets.get(socketId)?.disconnect(true);
+        });
+
+    presenceService.clearAll(userId); 
+
+    res.clearCookie('chessin_sid', cookieOptions);
+
+    res.send({ success: true });
+
+    }
 
 export default handleLogin
