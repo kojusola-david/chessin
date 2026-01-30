@@ -17,7 +17,7 @@ export class GameManager {
   private static instance: GameManager;
   private games: Map<string, GameSession> = new Map();
 
-  private constructor() {} // Prevents direct construction
+  private constructor() {}
 
   public static getInstance(): GameManager {
     if (!GameManager.instance) {

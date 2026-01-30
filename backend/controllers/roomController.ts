@@ -14,7 +14,7 @@ interface GameSyncPayload {
 }
 
 export const handleJoinRoom = (socket: Socket, io: Server, roomId: string) => {
-  const userId = socket.handshake.auth.userId;
+  const userId = socket.data.userId;
   const gameManager = GameManager.getInstance();
   let session = gameManager.getSession(roomId);
 
@@ -22,12 +22,12 @@ export const handleJoinRoom = (socket: Socket, io: Server, roomId: string) => {
     // If room is empty, this user becomes White
     session = gameManager.createSession(roomId, userId);
     socket.join(roomId);
-    socket.emit('role', 'White');
+    socket.emit('role', 'w');
   } else if (!session.blackId && userId !== session.whiteId) {
     // 2. Second player joins (Black)
     session = gameManager.joinGame(roomId, userId);
     socket.join(roomId);
-    socket.emit('role', 'Black');
+    socket.emit('role', 'b');
 
     // io.to(roomId).emit('gameStart', {
     //   fen: session?.game.fen(),
@@ -68,10 +68,5 @@ export const handleJoinRoom = (socket: Socket, io: Server, roomId: string) => {
     }
   }
 
-  console.log('Room Id: ', roomId);
-
-  console.log({
-    blackId: session?.blackId,
-    whiteId: session?.whiteId,
-  });
+  console.log(session);
 };

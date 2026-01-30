@@ -60,8 +60,8 @@ export default function RenderChessBoard({ socket, roomId }: props) {
       console.log('Move legal, emitting...', move); // DEBUG LINE
       // Emitting to the backend
       socket.emit('makeMove', {
-        move: moveData, // Best to wrap it in a 'move' key for clarity
-        roomId: roomId, // Use the key your backend expects
+        move: moveData, 
+        roomId: roomId, 
       });
       return true;
     }
@@ -72,11 +72,7 @@ export default function RenderChessBoard({ socket, roomId }: props) {
     // Listen for updates from the backend (opponent moves)
     socket.on('role', (color: string) => {
       console.log('Assigned role:', color);
-      if (color === 'White') {
-        setPlayerColor('w');
-      } else if (color === 'Black') {
-        setPlayerColor('b');
-      }
+      setPlayerColor(color as "w" | "b")
     });
 
     socket.on('gameUpdate', (data) => {
