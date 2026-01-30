@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { nanoid } from 'nanoid';
+import { socket } from '../socket';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -7,6 +8,25 @@ export default function HomePage() {
   const handleCreateGame = () => {
     const newRoomId = nanoid(8);
     navigate(`/game/${newRoomId}`);
+  };
+
+  const handleLogOut = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/logout', {
+        method: 'POST',
+        // headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        socket.disconnect();
+        navigate('/login');
+      } else {
+        alert('Not completed');
+      }
+    } catch (err) {
+      console.error('Network error during logout:', err);
+    }
   };
 
   return (
@@ -18,6 +38,7 @@ export default function HomePage() {
       >
         Create Private Match
       </button>
+      <button onClick={handleLogOut}>Logout</button>
     </div>
   );
 }

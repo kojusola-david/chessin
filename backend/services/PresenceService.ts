@@ -38,10 +38,10 @@ export class PresenceService {
   }
 
   public getUser(userId: string) {
-    return this.sessions.get(userId)
+    return this.sessions.get(userId);
   }
 
   public clearAll(userId: string) {
-    this.sessions.delete(userId)
+    this.sessions.delete(userId);
   }
 }

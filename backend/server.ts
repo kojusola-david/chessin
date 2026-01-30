@@ -5,7 +5,7 @@ import { Type, Static } from '@sinclair/typebox';
 import { handleMove } from 'controllers/moveController.js';
 import { handleJoinRoom } from 'controllers/roomController.js';
 import { handleGameDisconnect } from 'controllers/disconnectController.js';
-import handleLogin from 'controllers/loginController';
+import { handleLogin, handleLogout } from 'controllers/logController';
 import handleSignUp from 'controllers/signUpController';
 import jwt from 'jsonwebtoken';
 import fastifyCookie from '@fastify/cookie';
@@ -76,6 +76,7 @@ fastify.get('/auth/me', async (req, res) => {
 
 fastify.post('/login', handleLogin);
 fastify.post('/register', handleSignUp);
+fastify.post('/logout', handleLogout);
 
 const start = async () => {
   try {

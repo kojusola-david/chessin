@@ -11,11 +11,11 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path='/register' element={<SignUp />}/>
-          <Route path='/login' element={<Login />}/>
-          <Route element={<ProtectedRoutes />} >
-              <Route path="/" element={<HomePage />} />
-              <Route path="/game/:roomId" element={<GamePage />} />
+          <Route path="/register" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
+          <Route element={<ProtectedRoutes />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/game/:roomId" element={<GamePage />} />
           </Route>
         </Routes>
       </Router>
