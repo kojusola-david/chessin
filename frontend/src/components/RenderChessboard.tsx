@@ -60,8 +60,8 @@ export default function RenderChessBoard({ socket, roomId }: props) {
       console.log('Move legal, emitting...', move); // DEBUG LINE
       // Emitting to the backend
       socket.emit('makeMove', {
-        move: moveData, 
-        roomId: roomId, 
+        move: moveData,
+        roomId: roomId,
       });
       return true;
     }
@@ -72,7 +72,7 @@ export default function RenderChessBoard({ socket, roomId }: props) {
     // Listen for updates from the backend (opponent moves)
     socket.on('role', (color: string) => {
       console.log('Assigned role:', color);
-      setPlayerColor(color as "w" | "b")
+      setPlayerColor(color as 'w' | 'b');
     });
 
     socket.on('gameUpdate', (data) => {
@@ -96,8 +96,8 @@ export default function RenderChessBoard({ socket, roomId }: props) {
       setChessPosition(game.current.fen());
 
       // Update role-based state
-      if (payload.playerRole === 'w') setPlayerColor('w');
-      else if (payload.playerRole === 'b') setPlayerColor('b');
+      // if (payload.playerRole === 'w') setPlayerColor('w');
+      // else if (payload.playerRole === 'b') setPlayerColor('b');
     });
 
     // socket.on('gameStart', (data) => {

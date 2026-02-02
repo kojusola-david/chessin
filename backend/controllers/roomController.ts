@@ -1,5 +1,7 @@
 import { Socket, Server } from 'socket.io';
 import { GameManager } from '../services/GameManager.js';
+import prisma from 'services/Prisma.js';
+import { error } from 'node:console';
 
 interface GameSyncPayload {
   fen: string; // Current board position
@@ -13,54 +15,69 @@ interface GameSyncPayload {
   };
 }
 
-export const handleJoinRoom = (socket: Socket, io: Server, roomId: string) => {
+export const handleJoinRoom = async (
+  socket: Socket,
+  io: Server,
+  roomId: string
+) => {
   const userId = socket.data.userId;
+  const player = await prisma.player.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+
+  if (!player) {
+    throw new Error('One or both players could not be found in the database.');
+  }
   const gameManager = GameManager.getInstance();
   let session = gameManager.getSession(roomId);
 
-  if (!session) {
+  if (!gameManager.waitingId && !(session?.white && session?.black)) {
     // If room is empty, this user becomes White
-    session = gameManager.createSession(roomId, userId);
+    gameManager.createWaiting(player);
     socket.join(roomId);
     socket.emit('role', 'w');
-  } else if (!session.blackId && userId !== session.whiteId) {
+  } else if (gameManager.waitingId && gameManager.waitingId !== player.id) {
     // 2. Second player joins (Black)
-    session = gameManager.joinGame(roomId, userId);
+    session = gameManager.createSession(roomId, player);
     socket.join(roomId);
     socket.emit('role', 'b');
 
-    // io.to(roomId).emit('gameStart', {
-    //   fen: session?.game.fen(),
-    //   whiteId: session?.whiteId,
-    //   blackId: session?.blackId,
-    // });
+    if (!session?.Chessgame) {
+      throw error('Game not found');
+    }
+    console.log(session);
 
-    io.to(roomId).emit('gameSync', {
-      fen: session?.game.fen(),
-      turn: session?.game.turn(),
-      whiteId: session?.whiteId,
-      blackId: session?.blackId,
-      // playerRole: session?.whiteId === userId ? 'w' : 'b',
-      history: session?.game.history(),
-      isGameOver: session?.game.isGameOver(),
+    socket.emit('gameSync', {
+      fen: session?.Chessgame.game.fen(),
+      turn: session?.Chessgame.game.turn(),
+      whiteId: session?.white!.id,
+      blackId: session?.black!.id,
+      playerRole: session?.white!.id === player.id ? 'w' : 'b',
+      history: session?.Chessgame.game.history(),
+      isGameOver: session?.Chessgame.game.isGameOver(),
     });
-  } else {
+  } else if (session?.white && session?.black) {
     // 3. Reconnection Logic
     // Check if this socket (or better, a persistent ID) matches a player already in the session
-    const isWhite = userId === session.whiteId;
-    const isBlack = userId === session.blackId;
+    const isWhite = player.id === session.white.id;
+    const isBlack = player.id === session.black.id;
 
+    // if(!session?.Chessgame) {
+    //   throw error('Game not found')
+    // }
     if (isWhite || isBlack) {
       socket.join(roomId);
       socket.emit('gameSync', {
-        fen: session.game.fen(),
-        turn: session.game.turn(),
+        fen: session!.Chessgame!.game.fen(),
+        turn: session!.Chessgame!.game.turn(),
         playerRole: isWhite ? 'w' : 'b',
-        history: session.game.history(),
-        isGameOver: session.game.isGameOver(),
+        history: session!.Chessgame!.game.history(),
+        isGameOver: session!.Chessgame!.game.isGameOver(),
         roomConfig: {
-          whitePlayerId: session.whiteId,
-          blackPlayerId: session.blackId,
+          whitePlayerId: session!.white!.id,
+          blackPlayerId: session!.black!.id,
         },
       });
     } else {

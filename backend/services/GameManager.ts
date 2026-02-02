@@ -1,21 +1,43 @@
-import {
-  Color,
-  GameState,
-  MoveRequest,
-  ServerEvent,
-  PieceType,
-} from '@chessin/shared';
 import { Chess } from 'chess.js';
+import prisma from './Prisma';
+import { Player } from 'generated/client';
 
 interface GameSession {
-  game: Chess;
-  whiteId?: string;
-  blackId?: string;
+  Chessgame?: ChessGame;
+  white?: Player;
+  black?: Player;
+}
+
+class ChessGame {
+  public game: Chess;
+  constructor(gameData: any) {
+    this.game = new Chess();
+    this.game.setHeader('White', gameData.whitePlayer.username);
+    this.game.setHeader('Black', gameData.blackPlayer.username);
+    this.game.setHeader(
+      'WhiteElo',
+      gameData.whitePlayer.currentRapidRating.toString()
+    );
+    this.game.setHeader(
+      'BlackElo',
+      gameData.blackPlayer.currentRapidRating.toString()
+    );
+    this.game.setHeader('Variant', 'Standard');
+  }
+
+  finalizeGame(result: string, termination: string) {
+    this.game.setHeader('Result', result);
+    this.game.setHeader('Termination', termination);
+
+    return this.game.pgn();
+  }
 }
 
 export class GameManager {
   private static instance: GameManager;
-  private games: Map<string, GameSession> = new Map();
+  private sessions: Map<string, GameSession> = new Map();
+  private waiting = {};
+  public waitingId: string = '';
 
   private constructor() {}
 
@@ -27,44 +49,36 @@ export class GameManager {
   }
 
   public getSession(roomId: string): GameSession | undefined {
-    return this.games.get(roomId);
+    return this.sessions.get(roomId);
   }
 
-  public createSession(roomId: string, userId: string): GameSession {
+  public createWaiting(player: Player) {
+    this.waiting = player;
+    this.waitingId = player.id;
+  }
+
+  public createSession(roomId: string, player: Player): GameSession {
     const newSession: GameSession = {
-      game: new Chess(),
-      whiteId: userId,
+      white: this.waiting as Player,
+      black: player,
     };
-    this.games.set(roomId, newSession);
+    const gameData = {
+      whitePlayer: newSession.white,
+      blackPlayer: newSession.black,
+    };
+    newSession.Chessgame = new ChessGame(gameData);
+    this.sessions.set(roomId, newSession);
+    this.waiting = {};
+    this.waitingId = '';
+
     return newSession;
-  }
-
-  public joinGame(roomId: string, userId: string): GameSession | undefined {
-    const session = this.getSession(roomId);
-
-    if (session) {
-      // 1. Prevent the White player from also becoming the Black player
-      if (session.whiteId === userId) {
-        return session;
-      }
-
-      // 2. Assign Black only if the seat is empty
-      if (!session.blackId) {
-        session.blackId = userId;
-        console.log(`Player ${userId} joined as Black in room ${roomId}`);
-      }
-
-      // 3. If someone else joins now, they are just a spectator
-      return session;
-    }
-    return undefined;
   }
 
   public getSessionByUserId(
     socketId: string
   ): { roomId: string; session: GameSession } | undefined {
-    for (const [roomId, session] of this.games.entries()) {
-      if (session.whiteId === socketId || session.blackId === socketId) {
+    for (const [roomId, session] of this.sessions.entries()) {
+      if (session.white!.id === socketId || session.black!.id === socketId) {
         return { roomId, session };
       }
     }
@@ -72,6 +86,6 @@ export class GameManager {
   }
 
   public removeSession(roomId: string): void {
-    this.games.delete(roomId);
+    this.sessions.delete(roomId);
   }
 }

@@ -19,26 +19,31 @@ export const handleMove = (socket: Socket, io: Server, payload: any) => {
   }
 
   // 3. Rule Validation & Execution (chess.js)
-  try {
-    const result = session.game.move({
-      from: move.from,
-      to: move.to,
-      promotion: move.promotion || 'q',
-    });
-
-    if (result) {
-      // 4. Broadcast the new state
-      io.to(roomId).emit('gameUpdate', {
-        fen: session.game.fen(),
-        history: session.game.history(),
-        isCheckmate: session.game.isCheckmate(),
-        isGameOver: session.game.isGameOver(),
+  if (session.Chessgame)
+    try {
+      const result = session.Chessgame.game.move({
+        from: move.from,
+        to: move.to,
+        promotion: move.promotion || 'q',
       });
-      console.log('Move made');
-    } else {
-      socket.emit('error', 'Illegal chess move');
+
+      if (result) {
+        // if (session.game.isCheckmate()){
+        //   gameEndService()
+        // }
+
+        // 4. Broadcast the new state
+        io.to(roomId).emit('gameUpdate', {
+          fen: session.Chessgame.game.fen(),
+          pgn: session.Chessgame.game.pgn(),
+          isCheckmate: session.Chessgame.game.isCheckmate(),
+          isGameOver: session.Chessgame.game.isGameOver(),
+        });
+        console.log(session.Chessgame.game.pgn());
+      } else {
+        socket.emit('error', 'Illegal chess move');
+      }
+    } catch (e) {
+      socket.emit('error', 'Error processing move');
     }
-  } catch (e) {
-    socket.emit('error', 'Error processing move');
-  }
 };
