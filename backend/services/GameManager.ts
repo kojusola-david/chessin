@@ -8,7 +8,7 @@ interface GameSession {
   black?: Player;
 }
 
-class ChessGame {
+export class ChessGame {
   public game: Chess;
   constructor(gameData: any) {
     this.game = new Chess();

@@ -47,7 +47,6 @@ export const handleJoinRoom = async (
     if (!session?.Chessgame) {
       throw error('Game not found');
     }
-    console.log(session);
 
     socket.emit('gameSync', {
       fen: session?.Chessgame.game.fen(),
@@ -84,6 +83,4 @@ export const handleJoinRoom = async (
       socket.emit('error', 'Room is full'); // Handle spectators later
     }
   }
-
-  console.log(session);
 };

@@ -2,6 +2,7 @@ import { Socket, Server } from 'socket.io';
 import { GameManager } from '../services/GameManager.js';
 import { MoveRequestSchema } from '@chessin/shared';
 import { Value } from '@sinclair/typebox/value';
+import { handleGameEnd } from './gameEndController.js';
 
 export const handleMove = (socket: Socket, io: Server, payload: any) => {
   const { roomId, move } = payload;
@@ -28,9 +29,9 @@ export const handleMove = (socket: Socket, io: Server, payload: any) => {
       });
 
       if (result) {
-        // if (session.game.isCheckmate()){
-        //   gameEndService()
-        // }
+        if (session.Chessgame.game.isGameOver()) {
+          handleGameEnd(session, roomId);
+        }
 
         // 4. Broadcast the new state
         io.to(roomId).emit('gameUpdate', {
@@ -39,7 +40,6 @@ export const handleMove = (socket: Socket, io: Server, payload: any) => {
           isCheckmate: session.Chessgame.game.isCheckmate(),
           isGameOver: session.Chessgame.game.isGameOver(),
         });
-        console.log(session.Chessgame.game.pgn());
       } else {
         socket.emit('error', 'Illegal chess move');
       }

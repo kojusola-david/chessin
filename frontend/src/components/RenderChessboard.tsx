@@ -89,8 +89,6 @@ export default function RenderChessBoard({ socket, roomId }: props) {
     });
 
     socket.on('gameSync', (payload) => {
-      console.log('Game sync!', payload);
-
       // Re-sync engine and UI
       game.current.load(payload.fen);
       setChessPosition(game.current.fen());
