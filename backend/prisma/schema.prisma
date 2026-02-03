@@ -38,45 +38,31 @@ enum Result {
 }
 
 model Player {
-  id                  String          @id @default(uuid(7)) @db.Uuid
-  username            String          @unique
+  id                  String   @id @default(uuid(7)) @db.Uuid
+  username            String   @unique
   password_hash       String
   name                String?
-  email               String          @unique
+  email               String   @unique
   currentRapidRating  Int
   currentBlitzrating  Int
   currentBulletRating Int
-  createdAt           DateTime        @default(now())
-  gamesAsWhite        Game[]          @relation("WhiteGames")
-  gamesAsBlack        Game[]          @relation("BlackGames")
-  ratingHistory       RatingHistory[]
+  createdAt           DateTime @default(now())
+  gamesAsWhite        Game[]   @relation("WhiteGames")
+  gamesAsBlack        Game[]   @relation("BlackGames")
 }
 
 model Game {
-  id            String          @id @default(uuid(7)) @db.Uuid
-  roomId        String
-  rated         Boolean
-  timeControl   String
-  timeClass     TimeClass
-  fen           String
-  pgn           String
-  white         Player          @relation("WhiteGames", fields: [whiteId], references: [id])
-  whiteId       String          @db.Uuid
-  black         Player          @relation("BlackGames", fields: [blackId], references: [id])
-  blackId       String          @db.Uuid
-  result        Result?
-  termination   Termination?
-  ratingChanges RatingHistory[]
-}
-
-model RatingHistory {
-  id        String   @id @default(uuid(7)) @db.Uuid
-  rating    Int
-  timeStamp DateTime @default(now())
-
-  player   Player @relation(fields: [playerId], references: [id])
-  playerId String @db.Uuid
-
-  game   Game?   @relation(fields: [gameId], references: [id])
-  gameId String? @db.Uuid
+  id          String       @id @default(uuid(7)) @db.Uuid
+  roomId      String
+  rated       Boolean
+  timeControl String
+  timeClass   TimeClass
+  fen         String
+  pgn         String
+  white       Player       @relation("WhiteGames", fields: [whiteId], references: [id])
+  whiteId     String       @db.Uuid
+  black       Player       @relation("BlackGames", fields: [blackId], references: [id])
+  blackId     String       @db.Uuid
+  result      Result?
+  termination Termination?
 }

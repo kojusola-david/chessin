@@ -29,10 +29,6 @@ export const handleMove = (socket: Socket, io: Server, payload: any) => {
       });
 
       if (result) {
-        if (session.Chessgame.game.isGameOver()) {
-          handleGameEnd(session, roomId);
-        }
-
         // 4. Broadcast the new state
         io.to(roomId).emit('gameUpdate', {
           fen: session.Chessgame.game.fen(),
@@ -40,6 +36,9 @@ export const handleMove = (socket: Socket, io: Server, payload: any) => {
           isCheckmate: session.Chessgame.game.isCheckmate(),
           isGameOver: session.Chessgame.game.isGameOver(),
         });
+        if (session.Chessgame.game.isGameOver()) {
+          handleGameEnd(session, roomId, io);
+        }
       } else {
         socket.emit('error', 'Illegal chess move');
       }

@@ -38,7 +38,7 @@ export const handleJoinRoom = async (
     gameManager.createWaiting(player);
     socket.join(roomId);
     socket.emit('role', 'w');
-  } else if (gameManager.waitingId && gameManager.waitingId !== player.id) {
+  } else if (gameManager.waitingId && (gameManager.waitingId !== player.id)) {
     // 2. Second player joins (Black)
     session = gameManager.createSession(roomId, player);
     socket.join(roomId);

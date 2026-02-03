@@ -1,7 +1,7 @@
 import { ChessGame } from 'services/GameManager';
 import { Player } from 'generated/client';
 import prisma from 'services/Prisma';
-import { log } from 'node:console';
+import { Server } from 'socket.io';
 
 interface GameSession {
   Chessgame?: ChessGame;
@@ -9,7 +9,11 @@ interface GameSession {
   black?: Player;
 }
 
-export async function handleGameEnd(session: GameSession, roomId: string) {
+export async function handleGameEnd(
+  session: GameSession,
+  roomId: string,
+  io: Server
+) {
   if (!session.Chessgame) return 'Game not found';
   let termination: string = '';
   if (session.Chessgame.game.isCheckmate()) {
@@ -48,6 +52,7 @@ export async function handleGameEnd(session: GameSession, roomId: string) {
         termination: 'CHECKMATE',
       },
     });
+    io.to(roomId).emit('gameOver', game);
   } catch (error) {
     console.log(error);
   }

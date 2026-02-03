@@ -2,6 +2,7 @@ import { Chessboard } from 'react-chessboard';
 import { Socket } from 'socket.io-client';
 import { useEffect, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface props {
   socket: Socket;
@@ -13,6 +14,8 @@ export default function RenderChessBoard({ socket, roomId }: props) {
   const game = useRef(new Chess());
   const [chessPosition, setChessPosition] = useState(game.current.fen());
   const [playerColor, setPlayerColor] = useState<'w' | 'b' | null>(null);
+
+  const navigate = useNavigate();
 
   function makeMove(moveObj: { from: string; to: string; promotion?: string }) {
     try {
@@ -75,42 +78,37 @@ export default function RenderChessBoard({ socket, roomId }: props) {
       setPlayerColor(color as 'w' | 'b');
     });
 
-    socket.on('gameUpdate', (data) => {
-      const { fen, isGameOver, isCheckmate } = data;
-
+    socket.on('gameUpdate', (fen) => {
       game.current.load(fen);
       setChessPosition(game.current.fen());
-
-      if (isCheckmate) {
-        alert('Checkmate! Game Over.');
-      } else if (isGameOver) {
-        alert('The game ended in a draw.');
-      }
     });
 
     socket.on('gameSync', (payload) => {
       // Re-sync engine and UI
       game.current.load(payload.fen);
       setChessPosition(game.current.fen());
-
-      // Update role-based state
-      // if (payload.playerRole === 'w') setPlayerColor('w');
-      // else if (payload.playerRole === 'b') setPlayerColor('b');
     });
 
-    // socket.on('gameStart', (data) => {
-    //   console.log('Game is starting!', data);
-    //   // Even if the first player already has a role,
-    //   // this event confirms the opponent is here.
-    //   game.current.load(data.fen);
-    //   setChessPosition(game.current.fen());
-    // });
+    socket.on('gameOver', (game) => {
+      let whoWon;
+      switch (game.result) {
+        case 'WHITE_WIN':
+          whoWon = 'White';
+          break;
+        case 'BLACK_WIN':
+          whoWon = 'BLACK';
+          break;
+      }
+
+      alert(`${whoWon} wins by ${game.termination}`);
+      navigate('/');
+    });
 
     return () => {
       socket.off('role');
       socket.off('gameUpdate');
       socket.off('gameSync');
-      // socket.off('gameStart');
+      socket.off('gameOver');
     };
   }, [socket]); // Add socket to dependency array
 
