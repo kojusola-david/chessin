@@ -2,7 +2,7 @@ import { Chessboard } from 'react-chessboard';
 import { Socket } from 'socket.io-client';
 import { useEffect, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface props {
   socket: Socket;
@@ -71,6 +71,12 @@ export default function RenderChessBoard({ socket, roomId }: props) {
     return false;
   }
 
+  function handleResign() {
+    socket.emit('resign', {
+      roomId: roomId,
+    });
+  }
+
   useEffect(() => {
     // Listen for updates from the backend (opponent moves)
     socket.on('role', (color: string) => {
@@ -78,8 +84,8 @@ export default function RenderChessBoard({ socket, roomId }: props) {
       setPlayerColor(color as 'w' | 'b');
     });
 
-    socket.on('gameUpdate', (fen) => {
-      game.current.load(fen);
+    socket.on('gameUpdate', (payload) => {
+      game.current.load(payload.fen);
       setChessPosition(game.current.fen());
     });
 
@@ -90,17 +96,20 @@ export default function RenderChessBoard({ socket, roomId }: props) {
     });
 
     socket.on('gameOver', (game) => {
-      let whoWon;
+      let message;
       switch (game.result) {
         case 'WHITE_WIN':
-          whoWon = 'White';
+          message = `White wins by ${game.termination}`;
           break;
         case 'BLACK_WIN':
-          whoWon = 'BLACK';
+          message = `Black wins by ${game.termination}`;
+          break;
+        case 'DRAW':
+          message = `Draw by ${game.termination}`;
           break;
       }
 
-      alert(`${whoWon} wins by ${game.termination}`);
+      alert(message);
       navigate('/');
     });
 
@@ -127,6 +136,7 @@ export default function RenderChessBoard({ socket, roomId }: props) {
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
       <Chessboard options={chessboardOptions} />
+      <button onClick={handleResign}>Resign</button>
     </div>
   );
 }

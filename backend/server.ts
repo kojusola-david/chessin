@@ -15,6 +15,7 @@ import prisma from 'services/Prisma';
 import 'dotenv/config';
 import { PresenceService } from 'services/PresenceService';
 import { GameManager } from 'services/GameManager';
+import { handleGameEnd } from 'controllers/gameEndController';
 
 // --- Schemas ---
 const MessageSchema = Type.Object({
@@ -161,6 +162,8 @@ const start = async () => {
       socket.on('joinRoom', (roomId) => handleJoinRoom(socket, io, roomId));
 
       socket.on('makeMove', (payload) => handleMove(socket, io, payload));
+
+      socket.on('resign', (payload) => handleMove(socket, io, payload, true));
 
       socket.on('disconnect', (reason) => {
         presenceService.removeUser(userId, socket.id);

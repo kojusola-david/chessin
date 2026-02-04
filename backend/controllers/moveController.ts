@@ -4,19 +4,25 @@ import { MoveRequestSchema } from '@chessin/shared';
 import { Value } from '@sinclair/typebox/value';
 import { handleGameEnd } from './gameEndController.js';
 
-export const handleMove = (socket: Socket, io: Server, payload: any) => {
+export const handleMove = (
+  socket: Socket,
+  io: Server,
+  payload: any,
+  isResignation = false
+) => {
   const { roomId, move } = payload;
+  const gameManager = GameManager.getInstance();
+  const session = gameManager.getSession(roomId);
+  if (!session) {
+    return socket.emit('error', 'Game not found');
+  }
+  if (isResignation) {
+    handleGameEnd(session, roomId, io, true, socket.id);
+  }
+
   // 1. Structural Validation (TypeBox)
   if (!Value.Check(MoveRequestSchema, move)) {
     return socket.emit('error', 'Invalid move format');
-  }
-
-  // 2. Get Game Instance from GameManager
-  const gameManager = GameManager.getInstance();
-  const session = gameManager.getSession(roomId);
-
-  if (!session) {
-    return socket.emit('error', 'Game not found');
   }
 
   // 3. Rule Validation & Execution (chess.js)
