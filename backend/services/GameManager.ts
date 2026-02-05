@@ -8,6 +8,11 @@ interface GameSession {
   black?: Player;
 }
 
+interface session {
+  GameSession: GameSession;
+  lastActive: number;
+}
+
 export class ChessGame {
   public game: Chess;
   constructor(gameData: any) {
@@ -35,11 +40,25 @@ export class ChessGame {
 
 export class GameManager {
   private static instance: GameManager;
-  private sessions: Map<string, GameSession> = new Map();
+  private sessions: Map<string, session> = new Map();
   private waiting = {};
   public waitingId: string = '';
 
-  private constructor() {}
+  private constructor() {
+    setInterval(() => this.cleanupStaleSessions(), 5 * 60 * 1000);
+  }
+
+  private cleanupStaleSessions() {
+    const now = Date.now();
+    const TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+    for (const [id, data] of this.sessions.entries()) {
+      if (now - data.lastActive > TIMEOUT) {
+        this.sessions.delete(id);
+        console.log(`Removed stale session: ${id}`);
+      }
+    }
+  }
 
   public static getInstance(): GameManager {
     if (!GameManager.instance) {
@@ -49,7 +68,7 @@ export class GameManager {
   }
 
   public getSession(roomId: string): GameSession | undefined {
-    return this.sessions.get(roomId);
+    return this.sessions.get(roomId)?.GameSession;
   }
 
   public createWaiting(player: Player) {
@@ -67,7 +86,10 @@ export class GameManager {
       blackPlayer: newSession.black,
     };
     newSession.Chessgame = new ChessGame(gameData);
-    this.sessions.set(roomId, newSession);
+    this.sessions.set(roomId, {
+      GameSession: newSession,
+      lastActive: Date.now(),
+    });
     this.waiting = {};
     this.waitingId = '';
 
@@ -76,9 +98,12 @@ export class GameManager {
 
   public getSessionByUserId(
     socketId: string
-  ): { roomId: string; session: GameSession } | undefined {
+  ): { roomId: string; session: session } | undefined {
     for (const [roomId, session] of this.sessions.entries()) {
-      if (session.white!.id === socketId || session.black!.id === socketId) {
+      if (
+        session.GameSession.white!.id === socketId ||
+        session.GameSession.black!.id === socketId
+      ) {
         return { roomId, session };
       }
     }
