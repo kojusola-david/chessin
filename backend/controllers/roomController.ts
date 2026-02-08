@@ -2,6 +2,7 @@ import { Socket, Server } from 'socket.io';
 import { GameManager } from '../services/GameManager.js';
 import prisma from 'services/Prisma.js';
 import { error } from 'node:console';
+import { TimeClass } from 'generated/enums.js';
 
 interface GameSyncPayload {
   fen: string; // Current board position
@@ -18,7 +19,8 @@ interface GameSyncPayload {
 export const handleJoinRoom = async (
   socket: Socket,
   io: Server,
-  roomId: string
+  roomId: string,
+  timeClass : TimeClass = 'RAPID'
 ) => {
   const userId = socket.data.userId;
   const player = await prisma.player.findUnique({
@@ -32,13 +34,14 @@ export const handleJoinRoom = async (
   }
   const gameManager = GameManager.getInstance();
   let session = gameManager.getSession(roomId);
+  let waiting = gameManager.getWaiting(roomId)
 
-  if (!gameManager.waitingId && !(session?.white && session?.black)) {
+  if (!waiting?.player && !(session?.white && session?.black)) {
     // If room is empty, this user becomes White
-    gameManager.createWaiting(player);
+    gameManager.createWaiting(roomId, player, timeClass);
     socket.join(roomId);
     socket.emit('role', 'w');
-  } else if (gameManager.waitingId && (gameManager.waitingId !== player.id)) {
+  } else if (waiting?.player && (waiting?.player.id !== player.id)) {
     // 2. Second player joins (Black)
     session = gameManager.createSession(roomId, player);
     socket.join(roomId);

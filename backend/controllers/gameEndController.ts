@@ -1,4 +1,4 @@
-import { ChessGame } from 'services/GameManager';
+import { ChessGame } from 'services/ChessGame';
 import { Player } from 'generated/client';
 import prisma from 'services/Prisma';
 import { Server } from 'socket.io';
@@ -25,27 +25,12 @@ export async function handleGameEnd(
   session: GameSession,
   roomId: string,
   io: Server,
-  isResignation = false,
+  terminationType: Termination = 'RESIGNATION',
   id = ''
 ) {
   if (!session.Chessgame) return 'Game not found';
-  let termination: Termination = 'CHECKMATE';
-  if (isResignation) {
-    termination = 'RESIGNATION';
-  }
-  if (session.Chessgame.game.isCheckmate()) {
-    termination = 'CHECKMATE';
-  } else if (session.Chessgame.game.isInsufficientMaterial()) {
-    termination = 'INSUFFICIENT_MATERIAL';
-  } else if (session.Chessgame.game.isDrawByFiftyMoves()) {
-    termination = 'FIFTY_MOVE_RULE';
-  } else if (session.Chessgame.game.isThreefoldRepetition()) {
-    termination = 'REPETITION';
-  } else if (session.Chessgame.game.isStalemate()) {
-    termination = 'STALEMATE';
-  }
   let result: Result;
-  switch (termination) {
+  switch (terminationType) {
     case 'CHECKMATE':
       result =
         session.Chessgame.game.turn() === 'b' ? 'WHITE_WIN' : 'BLACK_WIN';
@@ -53,11 +38,14 @@ export async function handleGameEnd(
     case 'RESIGNATION':
       result = id === session.white?.id ? 'BLACK_WIN' : 'WHITE_WIN';
       break;
+    case 'TIMEOUT':
+      result = id === session.white?.id ? 'WHITE_WIN' : 'BLACK_WIN';
+      break;
 
     default:
       result = 'DRAW';
   }
-  console.log(session.Chessgame.finalizeGame(result, termination));
+  console.log(session.Chessgame.finalizeGame(result, terminationType));
   try {
     const game = await prisma.game.create({
       data: {
@@ -70,7 +58,7 @@ export async function handleGameEnd(
         whiteId: session.white!.id,
         blackId: session.black!.id,
         result: result,
-        termination: termination,
+        termination: terminationType,
       },
     });
     io.to(roomId).emit('gameOver', game);

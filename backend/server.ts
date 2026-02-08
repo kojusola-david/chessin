@@ -159,11 +159,16 @@ const start = async () => {
       const gameManager = GameManager.getInstance();
       presenceService.addUser(userId, socket.id);
 
-      socket.on('joinRoom', (roomId) => handleJoinRoom(socket, io, roomId));
+      socket.on('joinRoom', (payload) => handleJoinRoom(socket, io, payload.roomId, payload.timeClass));
 
       socket.on('makeMove', (payload) => handleMove(socket, io, payload));
 
-      socket.on('resign', (payload) => handleMove(socket, io, payload, true));
+      socket.on('resign', (payload) =>
+        handleMove(socket, io, payload, 'RESIGNATION')
+      );
+      socket.on('claim_timeout', (payload) => {
+        handleMove(socket, io, payload, 'RESIGNATION')
+      })
 
       socket.on('disconnect', (reason) => {
         presenceService.removeUser(userId, socket.id);

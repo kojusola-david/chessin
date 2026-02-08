@@ -1,11 +1,20 @@
 import { Chess } from 'chess.js';
 import prisma from './Prisma';
 import { Player } from 'generated/client';
+import { ChessGame } from './ChessGame';
+import { TimeClass } from 'generated/client';
+import { Session } from 'node:inspector';
 
 interface GameSession {
   Chessgame?: ChessGame;
   white?: Player;
   black?: Player;
+}
+interface GameData {
+  startFen: string;
+  white: Player;
+  black: Player;
+  timeClass: TimeClass;
 }
 
 interface session {
@@ -13,36 +22,16 @@ interface session {
   lastActive: number;
 }
 
-export class ChessGame {
-  public game: Chess;
-  constructor(gameData: any) {
-    this.game = new Chess();
-    this.game.setHeader('White', gameData.whitePlayer.username);
-    this.game.setHeader('Black', gameData.blackPlayer.username);
-    this.game.setHeader(
-      'WhiteElo',
-      gameData.whitePlayer.currentRapidRating.toString()
-    );
-    this.game.setHeader(
-      'BlackElo',
-      gameData.blackPlayer.currentRapidRating.toString()
-    );
-    this.game.setHeader('Variant', 'Standard');
-  }
-
-  finalizeGame(result: string, termination: string) {
-    this.game.setHeader('Result', result);
-    this.game.setHeader('Termination', termination);
-
-    return this.game.pgn();
-  }
+interface gameReq {
+  player: Player;
+  timeClass: TimeClass
 }
+
 
 export class GameManager {
   private static instance: GameManager;
   private sessions: Map<string, session> = new Map();
-  private waiting = {};
-  public waitingId: string = '';
+  private waiting: Map<string, gameReq> = new Map();
 
   private constructor() {
     setInterval(() => this.cleanupStaleSessions(), 5 * 60 * 1000);
@@ -71,27 +60,33 @@ export class GameManager {
     return this.sessions.get(roomId)?.GameSession;
   }
 
-  public createWaiting(player: Player) {
-    this.waiting = player;
-    this.waitingId = player.id;
+  public getWaiting(roomId: string): gameReq | undefined {
+    return this.waiting.get(roomId);
+  }
+
+  public createWaiting(roomId: string, player: Player, timeClass: TimeClass) {
+    this.waiting.set(roomId, {player: player, timeClass: timeClass})
   }
 
   public createSession(roomId: string, player: Player): GameSession {
-    const newSession: GameSession = {
-      white: this.waiting as Player,
+    const waiting = this.waiting.get(roomId)
+      const gameData: GameData = {
+      white: waiting!.player,
       black: player,
-    };
-    const gameData = {
-      whitePlayer: newSession.white,
-      blackPlayer: newSession.black,
-    };
-    newSession.Chessgame = new ChessGame(gameData);
+      startFen: '',
+      timeClass: waiting!.timeClass
+    }; 
+      const newSession: GameSession = {
+      Chessgame: new ChessGame(gameData),
+      white: waiting!.player,
+      black: player,
+    }
+    
     this.sessions.set(roomId, {
       GameSession: newSession,
       lastActive: Date.now(),
     });
-    this.waiting = {};
-    this.waitingId = '';
+    this.waiting.delete(roomId);
 
     return newSession;
   }

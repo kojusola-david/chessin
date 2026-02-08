@@ -8,7 +8,7 @@ export const handleMove = (
   socket: Socket,
   io: Server,
   payload: any,
-  isResignation = false
+  termination = ''
 ) => {
   const { roomId, move } = payload;
   const gameManager = GameManager.getInstance();
@@ -16,8 +16,15 @@ export const handleMove = (
   if (!session) {
     return socket.emit('error', 'Game not found');
   }
-  if (isResignation) {
-    handleGameEnd(session, roomId, io, true, socket.id);
+  if (termination === 'TIMEOUT') {
+    let result = session.Chessgame?.checkTimeout();
+    if (result?.isGameOver){
+      let winner = result.winner === 'w' ? session.white?.id : session.black?.id;
+      handleGameEnd(session, roomId, io, 'TIMEOUT', winner)
+    }
+  }
+  if (termination === 'RESIGNATION') {
+    handleGameEnd(session, roomId, io, 'RESIGNATION', socket.id);
   }
 
   // 1. Structural Validation (TypeBox)
@@ -28,22 +35,13 @@ export const handleMove = (
   // 3. Rule Validation & Execution (chess.js)
   if (session.Chessgame)
     try {
-      const result = session.Chessgame.game.move({
-        from: move.from,
-        to: move.to,
-        promotion: move.promotion || 'q',
-      });
+      const result = session.Chessgame.makeMove(move.from, move.to);
 
       if (result) {
         // 4. Broadcast the new state
-        io.to(roomId).emit('gameUpdate', {
-          fen: session.Chessgame.game.fen(),
-          pgn: session.Chessgame.game.pgn(),
-          isCheckmate: session.Chessgame.game.isCheckmate(),
-          isGameOver: session.Chessgame.game.isGameOver(),
-        });
-        if (session.Chessgame.game.isGameOver()) {
-          handleGameEnd(session, roomId, io);
+        io.to(roomId).emit('gameUpdate', result);
+        if (result.isCheckmate) {
+          handleGameEnd(session, roomId, io, 'CHECKMATE')
         }
       } else {
         socket.emit('error', 'Illegal chess move');
