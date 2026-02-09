@@ -52,14 +52,15 @@ export const handleJoinRoom = async (
     }
 
     socket.emit('gameSync', {
-      fen: session?.Chessgame.game.fen(),
-      turn: session?.Chessgame.game.turn(),
-      whiteId: session?.white!.id,
-      blackId: session?.black!.id,
-      playerRole: session?.white!.id === player.id ? 'w' : 'b',
-      history: session?.Chessgame.game.history(),
-      isGameOver: session?.Chessgame.game.isGameOver(),
-    });
+    turn: 'w',
+    fen: '',
+    pgn: '',
+    isCheckmate: false,
+    isGameOver: false,
+    blackTimeLeft: session.Chessgame.blackTime,
+    whiteTimeLeft: session.Chessgame.whiteTime,
+    lastMoveTimestamp: session.Chessgame.lastMoveTimestamp,
+});
   } else if (session?.white && session?.black) {
     // 3. Reconnection Logic
     // Check if this socket (or better, a persistent ID) matches a player already in the session

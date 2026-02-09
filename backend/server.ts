@@ -167,7 +167,7 @@ const start = async () => {
         handleMove(socket, io, payload, 'RESIGNATION')
       );
       socket.on('claim_timeout', (payload) => {
-        handleMove(socket, io, payload, 'RESIGNATION')
+        handleMove(socket, io, payload, 'TIMEOUT')
       })
 
       socket.on('disconnect', (reason) => {

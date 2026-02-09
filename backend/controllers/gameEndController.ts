@@ -51,8 +51,8 @@ export async function handleGameEnd(
       data: {
         roomId: roomId,
         rated: true,
-        timeControl: '600',
-        timeClass: 'RAPID',
+        timeControl: '',
+        timeClass: session.Chessgame.timeClass,
         fen: session.Chessgame?.game.fen() as string,
         pgn: session.Chessgame?.game.pgn() as string,
         whiteId: session.white!.id,

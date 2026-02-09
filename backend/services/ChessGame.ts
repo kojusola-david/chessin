@@ -16,9 +16,11 @@ export class ChessGame {
   public lastMoveTimestamp: number;
   public turn: PlayerColor = 'w';
   public isGameOver: boolean = false;
+  public timeClass: TimeClass
 
   constructor(gameData: GameData) {
     this.game = new Chess();
+    this.timeClass = gameData.timeClass;
     switch (gameData.timeClass) {
       case 'BLITZ':
         this.whiteTime = this.blackTime = 5 * 60 * 1000; //minutes * seconds * milliseconds
@@ -58,14 +60,14 @@ export class ChessGame {
     const timeSpent = now - this.lastMoveTimestamp;
     if (this.turn === 'w') {
       this.whiteTime -= timeSpent;
-        console.log("White time: ", this.whiteTime);
+        console.log("White time: ", this.whiteTime, "\n Black time: ", this.blackTime);
 
     } else {
       this.blackTime -= timeSpent;
-      console.log("Black time: ", this.blackTime);
+        console.log("White time: ", this.whiteTime, "\n Black time: ", this.blackTime);
       
     }
-
+    this.lastMoveTimestamp = Date.now();
     this.game.move({
       from: from,
       to: to,
@@ -73,12 +75,14 @@ export class ChessGame {
 
     this.turn = this.turn === 'w' ? 'b' : 'w';
     return({
+          turn: this.turn,
           fen: this.game.fen(),
           pgn: this.game.pgn(),
           isCheckmate: this.game.isCheckmate(),
           isGameOver: this.game.isGameOver(),
           blackTimeLeft: this.blackTime,
-          whiteTimeLeft: this.whiteTime
+          whiteTimeLeft: this.whiteTime,
+          lastMoveTimestamp: this.lastMoveTimestamp,
         })
   }
 
