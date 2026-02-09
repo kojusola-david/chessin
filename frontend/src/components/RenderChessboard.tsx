@@ -3,18 +3,61 @@ import { Socket } from 'socket.io-client';
 import { useEffect, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
 import { useNavigate } from 'react-router-dom';
+import { useChessTimer } from '../hooks/useChessTimer';
 
 interface props {
   socket: Socket;
   roomId: string;
+  timeClass: string
 }
 
-export default function RenderChessBoard({ socket, roomId }: props) {
+interface GameState {
+    turn: 'w' | 'b'
+    fen: string
+    pgn: string
+    isCheckmate: boolean
+    isGameOver: boolean
+    blackTimeLeft: number
+    whiteTimeLeft: number
+    lastMoveTimestamp: number
+}
+
+export default function RenderChessBoard({ socket, roomId, timeClass }: props) {
   // Keep the engine instance in a ref so it persists without triggering re-renders
   const game = useRef(new Chess());
   const [chessPosition, setChessPosition] = useState(game.current.fen());
   const [playerColor, setPlayerColor] = useState<'w' | 'b' | null>(null);
+  const [gameState, setGameState] = useState<GameState | null>(null);
+  let startTime
+  switch(timeClass){
+    case 'RAPID':
+      startTime = 600000
+      break;
+    case 'BLITZ':
+      startTime = 300000
+      break;
+    case 'BULLET':
+      startTime = 60000
+      break;
+  }
 
+  const { whiteDisplay, blackDisplay } = useChessTimer(
+        gameState || { 
+            turn: 'w', 
+            fen: '',
+            pgn: '',
+            isCheckmate: false,
+            whiteTimeLeft: startTime!, 
+            blackTimeLeft: startTime!, 
+            lastMoveTimestamp: Date.now(),
+            isGameOver: false 
+        }, 
+        () => {
+            console.log("Flag fall!");
+            socket.emit('claim_timeout', { roomId: roomId });
+        }
+    );
+  
   const navigate = useNavigate();
 
   function makeMove(moveObj: { from: string; to: string; promotion?: string }) {
@@ -87,6 +130,7 @@ export default function RenderChessBoard({ socket, roomId }: props) {
     socket.on('gameUpdate', (payload) => {
       game.current.load(payload.fen);
       setChessPosition(game.current.fen());
+      setGameState(payload)
     });
 
     socket.on('gameSync', (payload) => {
@@ -135,7 +179,9 @@ export default function RenderChessBoard({ socket, roomId }: props) {
   }
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+      <div className="timer-black">{playerColor === 'b' ? whiteDisplay : blackDisplay}</div>
       <Chessboard options={chessboardOptions} />
+      <div className="timer-white">{playerColor === 'w' ? whiteDisplay : blackDisplay}</div>
       <button onClick={handleResign}>Resign</button>
     </div>
   );

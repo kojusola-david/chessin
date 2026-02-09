@@ -5,9 +5,9 @@ import { socket } from '../socket';
 export default function HomePage() {
   const navigate = useNavigate();
 
-  const handleCreateGame = () => {
+  const handleCreateGame = (timeControl: string) => {
     const newRoomId = nanoid(8);
-    navigate(`/game/${newRoomId}`);
+    navigate(`/game/${timeControl}/${newRoomId}`);
   };
 
   const handleLogOut = async () => {
@@ -32,11 +32,26 @@ export default function HomePage() {
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <h1 className="text-4xl font-bold mb-8">ChessIn</h1>
+
       <button
-        onClick={handleCreateGame}
+        onClick={() => handleCreateGame('RAPID')}
         className="px-6 py-3 bg-blue-600 text-white rounded-lg"
       >
-        Create Private Match
+        New rapid game
+      </button>
+
+      <button
+        onClick={() => handleCreateGame('BLITZ')}
+        className="px-6 py-3 bg-blue-600 text-white rounded-lg"
+      >
+        New blitz game
+      </button>
+
+      <button
+        onClick={() => handleCreateGame('BULLET')}
+        className="px-6 py-3 bg-blue-600 text-white rounded-lg"
+      >
+        New bullet game
       </button>
       <button onClick={handleLogOut}>Logout</button>
     </div>
