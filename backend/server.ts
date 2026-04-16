@@ -185,7 +185,6 @@ const start = async () => {
         console.log(`${message.sender} said ${message.message}`);
       });
     });
-
     await fastify.listen({ port: 3000, host: '0.0.0.0' });
   } catch (err) {
     fastify.log.error(err);

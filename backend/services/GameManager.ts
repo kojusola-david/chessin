@@ -3,8 +3,7 @@ import prisma from './Prisma';
 import { Player } from 'generated/client';
 import { ChessGame } from './ChessGame';
 import { TimeClass } from 'generated/client';
-import { Session } from 'node:inspector';
-
+import LobbyManager from './LobbyManager';
 interface GameSession {
   Chessgame?: ChessGame;
   white?: Player;
@@ -31,7 +30,7 @@ interface gameReq {
 export class GameManager {
   private static instance: GameManager;
   private sessions: Map<string, session> = new Map();
-  private waiting: Map<string, gameReq> = new Map();
+  private lobbyManager = LobbyManager.getInstance();
 
   private constructor() {
     setInterval(() => this.cleanupStaleSessions(), 5 * 60 * 1000);
@@ -61,15 +60,15 @@ export class GameManager {
   }
 
   public getWaiting(roomId: string): gameReq | undefined {
-    return this.waiting.get(roomId);
+    return this.lobbyManager.getRequest(roomId);
   }
 
   public createWaiting(roomId: string, player: Player, timeClass: TimeClass) {
-    this.waiting.set(roomId, {player: player, timeClass: timeClass})
+    this.lobbyManager.createRequest(roomId, player, timeClass)
   }
 
   public createSession(roomId: string, player: Player): GameSession {
-    const waiting = this.waiting.get(roomId)
+    const waiting = this.lobbyManager.getRequest(roomId)
       const gameData: GameData = {
       white: waiting!.player,
       black: player,
@@ -86,7 +85,7 @@ export class GameManager {
       GameSession: newSession,
       lastActive: Date.now(),
     });
-    this.waiting.delete(roomId);
+    this.lobbyManager.deleteRequest(roomId);
 
     return newSession;
   }

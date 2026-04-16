@@ -135,7 +135,7 @@ export default function RenderChessBoard({ socket, roomId, timeClass }: props) {
 
     socket.on('gameSync', (payload) => {
       // Re-sync engine and UI
-      game.current.load(payload.fen);
+      game.current.load(payload.fen ? payload.fen: null);
       setChessPosition(game.current.fen());
     });
 

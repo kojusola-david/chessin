@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { nanoid } from 'nanoid';
 import { socket } from '../socket';
+import Lobby from '../components/Lobby';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -54,6 +55,8 @@ export default function HomePage() {
         New bullet game
       </button>
       <button onClick={handleLogOut}>Logout</button>
+
+      <Lobby socket={socket}/>
     </div>
   );
 }

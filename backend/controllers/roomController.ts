@@ -3,6 +3,7 @@ import { GameManager } from '../services/GameManager.js';
 import prisma from 'services/Prisma.js';
 import { error } from 'node:console';
 import { TimeClass } from 'generated/enums.js';
+import LobbyManager from 'services/LobbyManager.js';
 
 interface GameSyncPayload {
   fen: string; // Current board position
@@ -33,6 +34,7 @@ export const handleJoinRoom = async (
     throw new Error('One or both players could not be found in the database.');
   }
   const gameManager = GameManager.getInstance();
+  const lobbyManager = LobbyManager.getInstance()
   let session = gameManager.getSession(roomId);
   let waiting = gameManager.getWaiting(roomId)
 
@@ -41,6 +43,7 @@ export const handleJoinRoom = async (
     gameManager.createWaiting(roomId, player, timeClass);
     socket.join(roomId);
     socket.emit('role', 'w');
+    io.emit('lobby_update', lobbyManager.getLobby())
   } else if (waiting?.player && (waiting?.player.id !== player.id)) {
     // 2. Second player joins (Black)
     session = gameManager.createSession(roomId, player);

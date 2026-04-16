@@ -36,7 +36,11 @@ export function useChessTimer(gameState: GameState, onTimeout: () => void) {
     return () => {
         if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [gameState]);
+  }, [gameState.turn, 
+    gameState.lastMoveTimestamp, 
+    gameState.whiteTimeLeft, 
+    gameState.blackTimeLeft, 
+    gameState.isGameOver]);
 
   function updateTimers() {
     const now = Date.now();
