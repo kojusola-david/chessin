@@ -27,6 +27,9 @@ const MessageSchema = Type.Object({
 // --- Infer Typescript type from schemas ---
 type Message = Static<typeof MessageSchema>;
 
+//TODO: Message is unused. To be removed
+
+
 const fastify = Fastify({
   logger: true,
 }).withTypeProvider<TypeBoxTypeProvider>();
@@ -152,13 +155,14 @@ const start = async () => {
       setTimeout(() => {
         console.log('Sending hi to', socket.id);
         socket.emit('hi');
-      }, 1000);
+      }, 1000);// For testing
 
       const userId = socket.data.userId;
       const presenceService = PresenceService.getInstance();
       const gameManager = GameManager.getInstance();
       presenceService.addUser(userId, socket.id);
 
+      //TODO: payload interface is not yet defined
       socket.on('joinRoom', (payload) => handleJoinRoom(socket, io, payload.roomId, payload.timeClass));
 
       socket.on('makeMove', (payload) => handleMove(socket, io, payload));
@@ -179,12 +183,12 @@ const start = async () => {
         }
 
         console.log(`User ${userId} disconnected. Reason: ${reason}`);
-      });
+      }); //TODO Disconnect function should not be defined here
 
       socket.on('message', (message) => {
         console.log(`${message.sender} said ${message.message}`);
       });
-    });
+    }); // TODO: Message unused, to be removed
     await fastify.listen({ port: 3000, host: '0.0.0.0' });
   } catch (err) {
     fastify.log.error(err);
