@@ -1,4 +1,4 @@
-# ♟️ Chessin
+# ♟️ Chessin [Development In progress]
 
 A high-performance, real-time multiplayer chess platform built with a focus on low-latency state synchronization and type safety.
 
@@ -14,7 +14,7 @@ A high-performance, real-time multiplayer chess platform built with a focus on l
 
 **Engine:**
 
-- Stockfish 16 (integrated via UCI protocol)
+- Stockfish 16 (integrated via UCI protocol) 
 
 ## 🏗️ Architecture
 
@@ -31,26 +31,4 @@ This project utilizes a **Monorepo** structure to ensure strict type safety acro
 - **Move Validation:** Dual-layer validation (Client for UI, Server for Security).
 - **Engine Analysis:** Integrated Stockfish evaluation for post-game review.
 
-## 🛠️ Local Development Setup
 
-1.  **Clone and Install:**
-
-    ```bash
-    git clone [https://github.com/yourusername/chess-project.git](https://github.com/yourusername/chess-project.git)
-    cd chess-project
-    npm install
-    ```
-
-2.  **Environment Variables:**
-    Create a `.env` file in `/backend`:
-
-    ```env
-    PORT=3000
-    DATABASE_URL=postgres://user:pass@localhost:5432/chess
-    ```
-
-3.  **Run Development Servers:**
-    ```bash
-    # Runs both Frontend (Vite) and Backend concurrently
-    npm run dev
-    ```
