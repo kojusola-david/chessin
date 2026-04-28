@@ -1,8 +1,8 @@
 import { Chess } from 'chess.js';
 import prisma from './Prisma';
-import { Player } from 'generated/client';
+import { Player } from '../generated/client';
 import { ChessGame } from './ChessGame';
-import { TimeClass } from 'generated/client';
+import { TimeClass } from '../generated/client';
 import LobbyManager from './LobbyManager';
 interface GameSession {
   Chessgame?: ChessGame;

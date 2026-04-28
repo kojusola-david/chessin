@@ -1,20 +1,22 @@
 {
   "compilerOptions": {
+    "types": ["node"],
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "lib": ["ESNext"],
     "outDir": "dist",
+    "rootDir": "..",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "baseUrl": ".",
     "paths": {
-      "@chessin/shared": ["../shared/index.ts"]
+      "@chessin/shared": ["./../shared/index.ts"]
     }
   },
-  "include": ["/**/*"]
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }

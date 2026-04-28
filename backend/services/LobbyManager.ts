@@ -1,4 +1,4 @@
-import { Player, TimeClass } from "generated/client";
+import { Player, TimeClass } from "../generated/client";
 
 interface gameRequest {
   player: Player;

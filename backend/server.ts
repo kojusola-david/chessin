@@ -2,20 +2,20 @@ import Fastify from 'fastify';
 import { Server } from 'socket.io';
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { Type, Static } from '@sinclair/typebox';
-import { handleMove } from 'controllers/moveController.js';
-import { handleJoinRoom } from 'controllers/roomController.js';
-import { handleGameDisconnect } from 'controllers/disconnectController.js';
-import { handleLogin, handleLogout } from 'controllers/logController';
-import handleSignUp from 'controllers/signUpController';
+import { handleMove } from './controllers/moveController.js';
+import { handleJoinRoom } from './controllers/roomController.js';
+import { handleGameDisconnect } from './controllers/disconnectController.js';
+import { handleLogin, handleLogout } from './controllers/logController';
+import handleSignUp from './controllers/signUpController';
 import jwt from 'jsonwebtoken';
 import fastifyCookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import cookie from 'cookie';
-import prisma from 'services/Prisma';
+import prisma from './services/Prisma';
 import 'dotenv/config';
-import { PresenceService } from 'services/PresenceService';
-import { GameManager } from 'services/GameManager';
-import { handleGameEnd } from 'controllers/gameEndController';
+import { PresenceService } from './services/PresenceService';
+import { GameManager } from './services/GameManager';
+import { handleGameEnd } from './controllers/gameEndController';
 
 // --- Schemas ---
 const MessageSchema = Type.Object({

@@ -1,9 +1,9 @@
 import { Socket, Server } from 'socket.io';
 import { GameManager } from '../services/GameManager.js';
-import prisma from 'services/Prisma.js';
+import prisma from '../services/Prisma.js';
 import { error } from 'node:console';
-import { TimeClass } from 'generated/enums.js';
-import LobbyManager from 'services/LobbyManager.js';
+import { TimeClass } from '../generated/enums.js';
+import LobbyManager from '../services/LobbyManager.js';
 
 interface GameSyncPayload {
   fen: string; // Current board position

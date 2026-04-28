@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import prisma from 'services/Prisma';
+import prisma from '../services/Prisma';
 import 'dotenv/config';
-import { PresenceService } from 'services/PresenceService';
+import { PresenceService } from '../services/PresenceService';
 
 const cookieOptions = {
   path: '/',

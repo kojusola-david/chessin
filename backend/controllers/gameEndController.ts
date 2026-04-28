@@ -1,6 +1,6 @@
-import { ChessGame } from 'services/ChessGame';
-import { Player } from 'generated/client';
-import prisma from 'services/Prisma';
+import { ChessGame } from '../services/ChessGame';
+import { Player } from '../generated/client';
+import prisma from '../services/Prisma';
 import { Server } from 'socket.io';
 
 type Result = 'BLACK_WIN' | 'WHITE_WIN' | 'DRAW';

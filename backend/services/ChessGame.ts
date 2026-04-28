@@ -1,6 +1,6 @@
 import { Chess } from 'chess.js';
-import { Player } from 'generated/client';
-import { TimeClass } from 'generated/client';
+import { Player } from '../generated/client';
+import { TimeClass } from '../generated/client';
 type PlayerColor = 'w' | 'b';
 interface GameData {
   startFen: string;

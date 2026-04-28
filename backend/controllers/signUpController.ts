@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import prisma from 'services/Prisma';
+import prisma from '../services/Prisma';
 import 'dotenv/config';
 
 async function handleSignUp(req: any, res: any) {
