@@ -40,7 +40,7 @@ export const handleJoinRoom = async (
 
   if (!waiting?.player && !(session?.white && session?.black)) {
     // If room is empty, this user becomes White
-    gameManager.createWaiting(roomId, player, timeClass);
+    gameManager.createWaiting(roomId, {player, timeClass});
     socket.join(roomId);
     socket.emit('role', 'w');
     io.emit('lobby_update', lobbyManager.getLobby())
@@ -50,37 +50,37 @@ export const handleJoinRoom = async (
     socket.join(roomId);
     socket.emit('role', 'b');
 
-    if (!session?.Chessgame) {
+    if (!session?.game) {
       throw error('Game not found');
     }
 
     socket.emit('gameSync', {
-    turn: 'w',
-    fen: '',
-    pgn: '',
-    isCheckmate: false,
-    isGameOver: false,
-    blackTimeLeft: session.Chessgame.blackTime,
-    whiteTimeLeft: session.Chessgame.whiteTime,
-    lastMoveTimestamp: session.Chessgame.lastMoveTimestamp,
-});
+      turn: 'w',
+      fen: '',
+      pgn: '',
+      isCheckmate: false,
+      isGameOver: false,
+    blackTimeLeft: session.game.blackTime,
+    whiteTimeLeft: session.game.whiteTime,
+    lastMoveTimestamp: session.game.lastMoveTimestamp,
+    });
   } else if (session?.white && session?.black) {
     // 3. Reconnection Logic
     // Check if this socket (or better, a persistent ID) matches a player already in the session
     const isWhite = player.id === session.white.id;
     const isBlack = player.id === session.black.id;
 
-    // if(!session?.Chessgame) {
+    // if(!session?.game) {
     //   throw error('Game not found')
     // }
     if (isWhite || isBlack) {
       socket.join(roomId);
       socket.emit('gameSync', {
-        fen: session!.Chessgame!.game.fen(),
-        turn: session!.Chessgame!.game.turn(),
+        fen: session!.game!.game.fen(),
+        turn: session!.game!.game.turn(),
         playerRole: isWhite ? 'w' : 'b',
-        history: session!.Chessgame!.game.history(),
-        isGameOver: session!.Chessgame!.game.isGameOver(),
+        history: session!.game!.game.history(),
+        isGameOver: session!.game!.game.isGameOver(),
         roomConfig: {
           whitePlayerId: session!.white!.id,
           blackPlayerId: session!.black!.id,

@@ -1,35 +1,24 @@
-import { Chess } from 'chess.js';
-import prisma from './Prisma';
-import { Player } from '../generated/client';
+import { SessionPlayer } from '@chessin/shared';
 import { ChessGame } from './ChessGame';
 import { TimeClass } from '../generated/client';
 import LobbyManager from './LobbyManager';
+import { GameRequest } from '@chessin/shared';
 interface GameSession {
-  Chessgame?: ChessGame;
-  white?: Player;
-  black?: Player;
+  game: ChessGame;
+  white: SessionPlayer;
+  black: SessionPlayer;
+  lastActive: number;
 }
 interface GameData {
   startFen: string;
-  white: Player;
-  black: Player;
+  white: SessionPlayer;
+  black: SessionPlayer;
   timeClass: TimeClass;
 }
 
-interface session {
-  GameSession: GameSession;
-  lastActive: number;
-}
-
-interface gameReq {
-  player: Player;
-  timeClass: TimeClass
-}
-
-
 export class GameManager {
   private static instance: GameManager;
-  private sessions: Map<string, session> = new Map();
+  private sessions: Map<string, GameSession> = new Map();
   private lobbyManager = LobbyManager.getInstance();
 
   private constructor() {
@@ -56,35 +45,31 @@ export class GameManager {
   }
 
   public getSession(roomId: string): GameSession | undefined {
-    return this.sessions.get(roomId)?.GameSession;
+    return this.sessions.get(roomId);
   }
 
-  public getWaiting(roomId: string): gameReq | undefined {
+  public getWaiting(roomId: string): GameRequest | undefined {
     return this.lobbyManager.getRequest(roomId);
   }
 
-  public createWaiting(roomId: string, player: Player, timeClass: TimeClass) {
-    this.lobbyManager.createRequest(roomId, player, timeClass)
+  public createWaiting(roomId: string, GameRequest: GameRequest) {
+    this.lobbyManager.createRequest(roomId, GameRequest);
   }
 
-  public createSession(roomId: string, player: Player): GameSession {
-    const waiting = this.lobbyManager.getRequest(roomId)
-      const gameData: GameData = {
+  public createSession(roomId: string, player: SessionPlayer): GameSession {
+    const waiting = this.lobbyManager.getRequest(roomId);
+    const gameData: GameData = {
       white: waiting!.player,
       black: player,
       startFen: '',
-      timeClass: waiting!.timeClass
-    }; 
-      const newSession: GameSession = {
-      Chessgame: new ChessGame(gameData),
+      timeClass: waiting!.timeClass,
+    };
+    const newSession: GameSession = {
+      game: new ChessGame(gameData),
       white: waiting!.player,
       black: player,
-    }
-    
-    this.sessions.set(roomId, {
-      GameSession: newSession,
       lastActive: Date.now(),
-    });
+    };
     this.lobbyManager.deleteRequest(roomId);
 
     return newSession;
@@ -92,12 +77,9 @@ export class GameManager {
 
   public getSessionByUserId(
     socketId: string
-  ): { roomId: string; session: session } | undefined {
+  ): { roomId: string; session: GameSession } | undefined {
     for (const [roomId, session] of this.sessions.entries()) {
-      if (
-        session.GameSession.white!.id === socketId ||
-        session.GameSession.black!.id === socketId
-      ) {
+      if (session.white!.id === socketId || session.black!.id === socketId) {
         return { roomId, session };
       }
     }

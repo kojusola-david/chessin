@@ -1,7 +1,7 @@
 import { Chess } from 'chess.js';
-import { Player } from '../generated/client';
 import { TimeClass } from '../generated/client';
-type PlayerColor = 'w' | 'b';
+import { PlayerColor } from '@chessin/shared';
+
 interface GameData {
   startFen: string;
   white: any;
@@ -16,7 +16,7 @@ export class ChessGame {
   public lastMoveTimestamp: number;
   public turn: PlayerColor = 'w';
   public isGameOver: boolean = false;
-  public timeClass: TimeClass
+  public timeClass: TimeClass;
 
   constructor(gameData: GameData) {
     this.game = new Chess();
@@ -60,12 +60,20 @@ export class ChessGame {
     const timeSpent = now - this.lastMoveTimestamp;
     if (this.turn === 'w') {
       this.whiteTime -= timeSpent;
-        console.log("White time: ", this.whiteTime, "\n Black time: ", this.blackTime);
-
+      console.log(
+        'White time: ',
+        this.whiteTime,
+        '\n Black time: ',
+        this.blackTime
+      );
     } else {
       this.blackTime -= timeSpent;
-        console.log("White time: ", this.whiteTime, "\n Black time: ", this.blackTime);
-      
+      console.log(
+        'White time: ',
+        this.whiteTime,
+        '\n Black time: ',
+        this.blackTime
+      );
     }
     this.lastMoveTimestamp = Date.now();
     this.game.move({
@@ -74,16 +82,16 @@ export class ChessGame {
     });
 
     this.turn = this.turn === 'w' ? 'b' : 'w';
-    return({
-          turn: this.turn,
-          fen: this.game.fen(),
-          pgn: this.game.pgn(),
-          isCheckmate: this.game.isCheckmate(),
-          isGameOver: this.game.isGameOver(),
-          blackTimeLeft: this.blackTime,
-          whiteTimeLeft: this.whiteTime,
-          lastMoveTimestamp: this.lastMoveTimestamp,
-        })
+    return {
+      turn: this.turn,
+      fen: this.game.fen(),
+      pgn: this.game.pgn(),
+      isCheckmate: this.game.isCheckmate(),
+      isGameOver: this.game.isGameOver(),
+      blackTimeLeft: this.blackTime,
+      whiteTimeLeft: this.whiteTime,
+      lastMoveTimestamp: this.lastMoveTimestamp,
+    };
   }
 
   public checkTimeout() {

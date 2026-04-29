@@ -29,7 +29,6 @@ type Message = Static<typeof MessageSchema>;
 
 //TODO: Message is unused. To be removed
 
-
 const fastify = Fastify({
   logger: true,
 }).withTypeProvider<TypeBoxTypeProvider>();
@@ -155,7 +154,7 @@ const start = async () => {
       setTimeout(() => {
         console.log('Sending hi to', socket.id);
         socket.emit('hi');
-      }, 1000);// For testing
+      }, 1000); // For testing
 
       const userId = socket.data.userId;
       const presenceService = PresenceService.getInstance();
@@ -163,7 +162,9 @@ const start = async () => {
       presenceService.addUser(userId, socket.id);
 
       //TODO: payload interface is not yet defined
-      socket.on('joinRoom', (payload) => handleJoinRoom(socket, io, payload.roomId, payload.timeClass));
+      socket.on('joinRoom', (payload) =>
+        handleJoinRoom(socket, io, payload.roomId, payload.timeClass)
+      );
 
       socket.on('makeMove', (payload) => handleMove(socket, io, payload));
 
@@ -171,8 +172,8 @@ const start = async () => {
         handleMove(socket, io, payload, 'RESIGNATION')
       );
       socket.on('claim_timeout', (payload) => {
-        handleMove(socket, io, payload, 'TIMEOUT')
-      })
+        handleMove(socket, io, payload, 'TIMEOUT');
+      });
 
       socket.on('disconnect', (reason) => {
         presenceService.removeUser(userId, socket.id);

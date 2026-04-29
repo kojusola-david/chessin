@@ -18,9 +18,10 @@ export const handleMove = (
   }
   if (termination === 'TIMEOUT') {
     let result = session.Chessgame?.checkTimeout();
-    if (result?.isGameOver){
-      let winner = result.winner === 'w' ? session.white?.id : session.black?.id;
-      handleGameEnd(session, roomId, io, 'TIMEOUT', winner)
+    if (result?.isGameOver) {
+      let winner =
+        result.winner === 'w' ? session.white?.id : session.black?.id;
+      handleGameEnd(session, roomId, io, 'TIMEOUT', winner);
     }
   }
   if (termination === 'RESIGNATION') {
@@ -41,7 +42,7 @@ export const handleMove = (
         // 4. Broadcast the new state
         io.to(roomId).emit('gameUpdate', result);
         if (result.isCheckmate) {
-          handleGameEnd(session, roomId, io, 'CHECKMATE')
+          handleGameEnd(session, roomId, io, 'CHECKMATE');
         }
       } else {
         socket.emit('error', 'Illegal chess move');

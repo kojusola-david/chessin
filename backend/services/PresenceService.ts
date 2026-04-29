@@ -14,7 +14,7 @@ export class PresenceService {
     return PresenceService.instance;
   }
 
-  public addUser(userId: string, socketId: string) {
+  public addUser(userId: userId, socketId: socketId) {
     const existingSessions = this.sessions.get(userId);
 
     if (existingSessions) {

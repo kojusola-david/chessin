@@ -2,18 +2,7 @@ import { ChessGame } from '../services/ChessGame';
 import { Player } from '../generated/client';
 import prisma from '../services/Prisma';
 import { Server } from 'socket.io';
-
-type Result = 'BLACK_WIN' | 'WHITE_WIN' | 'DRAW';
-type Termination =
-  | 'CHECKMATE'
-  | 'TIMEOUT'
-  | 'RESIGNATION'
-  | 'ABANDONMENT'
-  | 'AGREEMENT'
-  | 'INSUFFICIENT_MATERIAL'
-  | 'FIFTY_MOVE_RULE'
-  | 'REPETITION'
-  | 'STALEMATE';
+import { GameResult, GameTermination } from '@chessin/shared';
 
 interface GameSession {
   Chessgame?: ChessGame;
@@ -25,11 +14,11 @@ export async function handleGameEnd(
   session: GameSession,
   roomId: string,
   io: Server,
-  terminationType: Termination = 'RESIGNATION',
+  terminationType: GameTermination = 'RESIGNATION',
   id = ''
 ) {
   if (!session.Chessgame) return 'Game not found';
-  let result: Result;
+  let result: GameResult;
   switch (terminationType) {
     case 'CHECKMATE':
       result =
