@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 
 interface GameState {
-    turn: 'w' | 'b'
-    fen: string
-    pgn: string
-    isCheckmate: boolean
-    isGameOver: boolean
-    blackTimeLeft: number
-    whiteTimeLeft: number
-    lastMoveTimestamp: number
+  turn: 'w' | 'b';
+  fen: string;
+  pgn: string;
+  isCheckmate: boolean;
+  isGameOver: boolean;
+  blackTimeLeft: number;
+  whiteTimeLeft: number;
+  lastMoveTimestamp: number;
 }
 
 export function useChessTimer(gameState: GameState, onTimeout: () => void) {
@@ -19,14 +19,14 @@ export function useChessTimer(gameState: GameState, onTimeout: () => void) {
 
   useEffect(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
-    
+
     updateTimers();
 
     if (gameState.isGameOver) return;
 
     intervalRef.current = window.setInterval(() => {
       const result = updateTimers();
-      
+
       if (result.white <= 0 || result.black <= 0) {
         clearInterval(intervalRef.current!);
         onTimeout();
@@ -34,13 +34,15 @@ export function useChessTimer(gameState: GameState, onTimeout: () => void) {
     }, 100);
 
     return () => {
-        if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [gameState.turn, 
-    gameState.lastMoveTimestamp, 
-    gameState.whiteTimeLeft, 
-    gameState.blackTimeLeft, 
-    gameState.isGameOver]);
+  }, [
+    gameState.turn,
+    gameState.lastMoveTimestamp,
+    gameState.whiteTimeLeft,
+    gameState.blackTimeLeft,
+    gameState.isGameOver,
+  ]);
 
   function updateTimers() {
     const now = Date.now();
@@ -57,15 +59,15 @@ export function useChessTimer(gameState: GameState, onTimeout: () => void) {
 
     setWhiteDisplay(w);
     setBlackDisplay(b);
-    
+
     return { white: w, black: b };
   }
 
-  return { 
-    whiteDisplay: formatTime(whiteDisplay), 
+  return {
+    whiteDisplay: formatTime(whiteDisplay),
     blackDisplay: formatTime(blackDisplay),
     whiteMs: whiteDisplay,
-    blackMs: blackDisplay
+    blackMs: blackDisplay,
   };
 }
 
@@ -74,11 +76,11 @@ function formatTime(ms: number): string {
   const totalSeconds = Math.ceil(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-  
+
   // Optional: Show decimals if under 10 seconds (standard in chess apps)
   if (totalSeconds < 10 && ms > 0) {
-      const dec = Math.floor((ms % 1000) / 100);
-      return `0:0${seconds}.${dec}`;
+    const dec = Math.floor((ms % 1000) / 100);
+    return `0:0${seconds}.${dec}`;
   }
 
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;

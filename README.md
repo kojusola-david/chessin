@@ -14,7 +14,7 @@ A high-performance, real-time multiplayer chess platform built with a focus on l
 
 **Engine:**
 
-- Stockfish 16 (integrated via UCI protocol) 
+- Stockfish 16 (integrated via UCI protocol)
 
 ## 🏗️ Architecture
 
@@ -30,5 +30,3 @@ This project utilizes a **Monorepo** structure to ensure strict type safety acro
 - **Spectator Mode:** Live broadcasting of active matches.
 - **Move Validation:** Dual-layer validation (Client for UI, Server for Security).
 - **Engine Analysis:** Integrated Stockfish evaluation for post-game review.
-
-

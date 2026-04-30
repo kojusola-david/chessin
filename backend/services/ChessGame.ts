@@ -2,7 +2,7 @@ import { Chess } from 'chess.js';
 import { TimeClass } from '../generated/client';
 import { PlayerColor } from '@chessin/shared';
 
-interface GameData {
+export interface GameData {
   startFen: string;
   white: any;
   black: any;

@@ -56,7 +56,7 @@ export default function HomePage() {
       </button>
       <button onClick={handleLogOut}>Logout</button>
 
-      <Lobby socket={socket}/>
+      <Lobby socket={socket} />
     </div>
   );
 }
