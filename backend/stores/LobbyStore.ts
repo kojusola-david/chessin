@@ -1,6 +1,6 @@
 import { GameRequest } from '@chessin/shared';
 
-class LobbyStore{
+export default class LobbyStore{
     private lobby: Map<string, GameRequest> = new Map();
 
     public getRequest(roomId: string): GameRequest | undefined {

@@ -1,29 +1,8 @@
-import { PlayerColor } from '@chessin/shared';
-import { SessionPlayer } from '@chessin/shared';
+import { SessionPlayer, GameState, GameSession } from '@chessin/shared';
 import { TimeClass } from '../generated/enums';
 import { Termination } from '../generated/enums';
 
-interface ChessGameState {
-  fen: string;
-  moves: string[];
-  turn: PlayerColor;
-  whiteTime: number;
-  blackTime: number;
-  lastMoveTimestamp: number;
-  status: Termination;
-  winner?: PlayerColor;
-  timeClass: TimeClass;
-}
-
-interface GameSession {
-  roomId: string;
-  white: SessionPlayer;
-  black: SessionPlayer;
-  gameState: ChessGameState;
-  lastActive: number;
-}
-
-class SessionStore {
+export default class SessionStore {
   private sessions: Map<string, GameSession> = new Map();
 
   private cleanupStaleSessions() {
@@ -46,7 +25,7 @@ class SessionStore {
     roomId: string,
     white: SessionPlayer,
     black: SessionPlayer,
-    state: ChessGameState
+    state: GameState
   ): GameSession {
     const newSession: GameSession = {
       roomId: roomId,

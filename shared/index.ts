@@ -1,5 +1,5 @@
 import { Type, type Static } from '@sinclair/typebox';
-import { TimeClass, type Player } from '../backend/generated/client';
+import { Termination, type Player } from '../backend/generated/client';
 
 /*TYPES */
 
@@ -35,22 +35,22 @@ export const MoveRequestSchema = Type.Object({
 export type MoveRequest = Static<typeof MoveRequestSchema>;
 
 //4. Game state object containing the game info
-export const GameStateSchema = Type.Object({
-  fen: Type.String(), // Current board position
-  turn: PlayerColorSchema, // Whose turn it is
-  isCheck: Type.Boolean(),
-  isGameOver: Type.Boolean(),
-  history: Type.Array(Type.String()), // SAN notation (e.g., ["e4", "e5", "Nf3"])
-  lastMove: Type.Optional(MoveRequestSchema),
-});
-export type GameState = Static<typeof GameStateSchema>;
+// export const GameStateSchema = Type.Object({
+//   fen: Type.String(), // Current board position
+//   turn: PlayerColorSchema, // Whose turn it is
+//   isCheck: Type.Boolean(),
+//   isGameOver: Type.Boolean(),
+//   history: Type.Array(Type.String()), // SAN notation (e.g., ["e4", "e5", "Nf3"])
+//   lastMove: Type.Optional(MoveRequestSchema),
+// });
+// export type GameState = Static<typeof GameStateSchema>;
 
 //5. Server events
-export const ServerEventSchema = Type.Union([
-  Type.Object({ type: Type.Literal('GAME_UPDATE'), payload: GameStateSchema }),
-  Type.Object({ type: Type.Literal('ERROR'), message: Type.String() }),
-]);
-export type ServerEvent = Static<typeof ServerEventSchema>;
+// export const ServerEventSchema = Type.Union([
+//   Type.Object({ type: Type.Literal('GAME_UPDATE'), payload: GameStateSchema }),
+//   Type.Object({ type: Type.Literal('ERROR'), message: Type.String() }),
+// ]);
+// export type ServerEvent = Static<typeof ServerEventSchema>;
 
 //6. Game result
 export const GameResultSchema = Type.Union([
@@ -103,13 +103,43 @@ export const GamePlayerSchema = Type.Object({
 });
 export type GamePlayer = Static<typeof GamePlayerSchema>;
 
-//8. Game Request
-export const GameRequestSchema = Type.Object({
-  player: SessionPlayerSchema,
-  timeClass: Type.Union([
+//8. Time Class
+export const TimeClassSchema = Type.Union([
     Type.Literal('BULLET'),
     Type.Literal('BLITZ'),
     Type.Literal('RAPID'),
-  ]),
+  ]);
+export type TimeClass = Static<typeof TimeClassSchema>;
+
+//9. Game Request
+export const GameRequestSchema = Type.Object({
+  roomId: Type.String(),
+  player: SessionPlayerSchema,
+  timeClass: TimeClassSchema,
+  createdAt: Type.Number(),
 });
 export type GameRequest = Static<typeof GameRequestSchema>;
+
+//10. Game State
+export const GameStateSchema = Type.Object({
+  fen: Type.String(),
+  moves: Type.Array(Type.String()),
+  turn: PlayerColorSchema,
+  whiteTime: Type.Number(),
+  blackTime: Type.Number(),
+  lastMoveTimestamp: Type.Number(),
+  status: Type.Optional(GameTerminationSchema),
+  winner: Type.Optional(PlayerColorSchema),
+  timeClass: TimeClassSchema,
+})
+export type GameState = Static<typeof GameStateSchema>;
+
+//11. Game Session
+export const GameSessionSchema = Type.Object({
+  roomId: Type.String(),
+  white: SessionPlayerSchema,
+  black: SessionPlayerSchema,
+  gameState: GameStateSchema,
+  lastActive: Type.Number(),
+})
+export type GameSession = Static<typeof GameSessionSchema>
