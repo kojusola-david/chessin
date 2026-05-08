@@ -86,6 +86,10 @@ export default class MatchmakingService {
       .find((request) => request.player.id === playerId);
   }
 
+  public getActiveRequests(): GameRequest[] {
+    return this.lobby.getLobby();
+  }
+
   public getSession(roomId: string): GameSession | undefined {
     return this.sessions.getSession(roomId);
   }
@@ -96,7 +100,7 @@ export default class MatchmakingService {
   public has(roomId: string): boolean {
     return this.sessions.has(roomId);
   }
-  public getByUserId(userId: string): GameSession | undefined {
+  public getSessionByUserId(userId: string): GameSession | undefined {
     return this.sessions.getByUserId(userId);
   }
 }
