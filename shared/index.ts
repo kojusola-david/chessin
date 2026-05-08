@@ -105,10 +105,10 @@ export type GamePlayer = Static<typeof GamePlayerSchema>;
 
 //8. Time Class
 export const TimeClassSchema = Type.Union([
-    Type.Literal('BULLET'),
-    Type.Literal('BLITZ'),
-    Type.Literal('RAPID'),
-  ]);
+  Type.Literal('BULLET'),
+  Type.Literal('BLITZ'),
+  Type.Literal('RAPID'),
+]);
 export type TimeClass = Static<typeof TimeClassSchema>;
 
 //9. Game Request
@@ -131,7 +131,7 @@ export const GameStateSchema = Type.Object({
   status: Type.Optional(GameTerminationSchema),
   winner: Type.Optional(PlayerColorSchema),
   timeClass: TimeClassSchema,
-})
+});
 export type GameState = Static<typeof GameStateSchema>;
 
 //11. Game Session
@@ -141,5 +141,5 @@ export const GameSessionSchema = Type.Object({
   black: SessionPlayerSchema,
   gameState: GameStateSchema,
   lastActive: Type.Number(),
-})
-export type GameSession = Static<typeof GameSessionSchema>
+});
+export type GameSession = Static<typeof GameSessionSchema>;
