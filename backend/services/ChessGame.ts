@@ -1,48 +1,39 @@
 import { Chess } from 'chess.js';
-import { TimeClass } from '../generated/client';
-import { PlayerColor } from '@chessin/shared';
+import { PlayerColor, GameState, Move } from '@chessin/shared';
 
-export interface GameData {
-  startFen: string;
-  white: any;
-  black: any;
-  timeClass: TimeClass;
-}
+type MoveError =
+  | { code: 'INVALID_SQUARE'; square: string }
+  | { code: 'NO_PIECE_AT_SOURCE' }
+  | { code: 'WRONG_TURN'; expected: PlayerColor }
+  | { code: 'ILLEGAL_MOVE'; reason: string }
+  | { code: 'GAME_OVER'; result: GameState };
+
+type MoveResult =
+  | { success: true; state: GameState }
+  | { success: false; error: MoveError };
+
+type TimeoutResult =
+  | { isTimeout: true; winner: PlayerColor }
+  | { isTimeout: false };
 
 export class ChessGame {
   public game: Chess;
-  public whiteTime: number;
-  public blackTime: number;
-  public lastMoveTimestamp: number;
-  public turn: PlayerColor = 'w';
-  public isGameOver: boolean = false;
-  public timeClass: TimeClass;
 
-  constructor(gameData: GameData) {
+  constructor() {
     this.game = new Chess();
-    this.timeClass = gameData.timeClass;
-    switch (gameData.timeClass) {
-      case 'BLITZ':
-        this.whiteTime = this.blackTime = 5 * 60 * 1000; //minutes * seconds * milliseconds
-        break;
-      case 'BULLET':
-        this.whiteTime = this.blackTime = 1 * 60 * 1000;
-        break;
-      default:
-        this.blackTime = this.whiteTime = 10 * 60 * 1000; //Rapid as default
-    }
 
-    this.lastMoveTimestamp = Date.now();
-    this.game.setHeader('White', gameData.white.username);
-    this.game.setHeader('Black', gameData.black.username);
-    this.game.setHeader(
-      'WhiteElo',
-      gameData.white.currentRapidRating.toString()
-    );
-    this.game.setHeader(
-      'BlackElo',
-      gameData.black.currentRapidRating.toString()
-    );
+    // this.game.setHeader('White', gameState.white.username);
+    // this.game.setHeader('Black', gameState.black.username);
+    // this.game.setHeader(
+    //   'WhiteElo',
+    //   gameState.white.currentRapidRating.toString()
+    // );
+    // this.game.setHeader(
+    //   'BlackElo',
+    //   gameState.black.currentRapidRating.toString()
+    // );
+
+    //I need to fix pgn headers
     this.game.setHeader('Variant', 'Standard');
   }
 
@@ -53,83 +44,109 @@ export class ChessGame {
     return this.game.pgn();
   }
 
-  public makeMove(from: string, to: string) {
-    if (this.isGameOver) return false;
+  public initializeGameState(): GameState {
+    return {
+      fen: '',
+      moves: [],
+      turn: 'w',
+      whiteTime: Date.now(),
+      blackTime: Date.now(),
+      lastMoveTimestamp: Date.now(),
+      timeClass: 'RAPID',
+    };
+  }
+
+  public makeMove(gameState: GameState, move: Move): MoveResult {
+    const game = new Chess(gameState.fen);
+    if (game.isGameOver())
+      return {
+        success: false,
+        error: { code: 'GAME_OVER', result: gameState },
+      };
 
     const now = Date.now();
-    const timeSpent = now - this.lastMoveTimestamp;
-    if (this.turn === 'w') {
-      this.whiteTime -= timeSpent;
-      console.log(
-        'White time: ',
-        this.whiteTime,
-        '\n Black time: ',
-        this.blackTime
-      );
+    let whiteTime = gameState.whiteTime;
+    let blackTime = gameState.blackTime;
+    if (whiteTime <= 0)
+      return {
+        success: false,
+        error: {
+          code: 'GAME_OVER',
+          result: { ...gameState, winner: 'b', status: 'TIMEOUT' },
+        },
+      };
+    if (blackTime <= 0)
+      return {
+        success: false,
+        error: {
+          code: 'GAME_OVER',
+          result: { ...gameState, winner: 'b', status: 'TIMEOUT' },
+        },
+      };
+    const timeSpent = now - gameState.lastMoveTimestamp;
+    if (gameState.turn === 'w') {
+      whiteTime = gameState.whiteTime - timeSpent;
+      blackTime = gameState.blackTime;
     } else {
-      this.blackTime -= timeSpent;
-      console.log(
-        'White time: ',
-        this.whiteTime,
-        '\n Black time: ',
-        this.blackTime
-      );
+      blackTime = gameState.blackTime - timeSpent;
+      whiteTime = gameState.whiteTime;
     }
-    this.lastMoveTimestamp = Date.now();
-    this.game.move({
-      from: from,
-      to: to,
+    const lastMoveTimestamp = Date.now();
+    const result = game.move({
+      from: move.from,
+      to: move.to,
+      promotion: move.promotion,
     });
+    if (result === null)
+      return {
+        success: false,
+        error: { code: 'ILLEGAL_MOVE', reason: 'chess.js rejected the move' },
+      };
 
-    this.turn = this.turn === 'w' ? 'b' : 'w';
-    return {
-      turn: this.turn,
-      fen: this.game.fen(),
-      pgn: this.game.pgn(),
-      isCheckmate: this.game.isCheckmate(),
-      isGameOver: this.game.isGameOver(),
-      blackTimeLeft: this.blackTime,
-      whiteTimeLeft: this.whiteTime,
-      lastMoveTimestamp: this.lastMoveTimestamp,
+    const nextTurn = gameState.turn === 'w' ? 'b' : 'w';
+    const newState: GameState = {
+      fen: game.fen(),
+      moves: game.moves(),
+      turn: nextTurn,
+      whiteTime: whiteTime,
+      blackTime: blackTime,
+      lastMoveTimestamp: lastMoveTimestamp,
+      timeClass: gameState.timeClass,
     };
+    return { success: true, state: newState };
   }
 
-  public checkTimeout() {
-    const now = Date.now();
-    const timeSpent = now - this.lastMoveTimestamp;
+  public checkTimeout(gameState: GameState, now: number): TimeoutResult {
+    const timeSpent = now - gameState.lastMoveTimestamp;
 
-    if (this.turn === 'w' && this.whiteTime - timeSpent <= 0) {
-      this.isGameOver = true;
-      return { isGameOver: true, winner: 'b' };
+    if (gameState.turn === 'w' && gameState.whiteTime - timeSpent <= 0) {
+      return { isTimeout: true, winner: 'b' };
     }
 
-    // 3. Check Black
-    if (this.turn === 'b' && this.blackTime - timeSpent <= 0) {
-      this.isGameOver = true;
-      return { isGameOver: true, winner: 'w' };
+    if (gameState.turn === 'b' && gameState.blackTime - timeSpent <= 0) {
+      return { isTimeout: true, winner: 'w' };
     }
 
-    // 4. No timeout
-    return { isGameOver: false };
+    return { isTimeout: false };
   }
 
-  public getLiveState() {
-    const now = Date.now();
-    const timeSpent = now - this.lastMoveTimestamp;
+  // public getLiveState() {
+  //   const now = Date.now();
+  //   const timeSpent = now - this.lastMoveTimestamp;
 
-    let currentWhite = this.whiteTime;
-    let currentBlack = this.blackTime;
+  //   let currentWhite = this.whiteTime;
+  //   let currentBlack = this.blackTime;
 
-    // Subtract pending time from whomever's turn it is currently
-    if (!this.isGameOver) {
-      if (this.turn === 'w') currentWhite -= timeSpent;
-      else currentBlack -= timeSpent;
-    }
+  //   // Subtract pending time from whomever's turn it is currently
+  //   if (!this.isGameOver) {
+  //     if (this.turn === 'w') currentWhite -= timeSpent;
+  //     else currentBlack -= timeSpent;
+  //   }
 
-    return {
-      whiteTime: Math.max(0, currentWhite),
-      blackTime: Math.max(0, currentBlack),
-      turn: this.turn,
-    };
-  }
+  //   return {
+  //     whiteTime: Math.max(0, currentWhite),
+  //     blackTime: Math.max(0, currentBlack),
+  //     turn: this.turn,
+  //   };
+  // }
 }

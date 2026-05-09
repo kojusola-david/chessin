@@ -1,31 +1,16 @@
 import { Socket, Server } from 'socket.io';
-import { GameManager } from '../services/GameManager.js';
+import MatchmakingService from '../services/MatchmakingService';
 import { MoveRequestSchema } from '@chessin/shared';
 import { Value } from '@sinclair/typebox/value';
-import { handleGameEnd } from './gameEndController.js';
+import { ChessGame } from '../services/ChessGame';
 
-export const handleMove = (
-  socket: Socket,
-  io: Server,
-  payload: any,
-  termination = ''
-) => {
+const chessgame = new ChessGame();
+export const handleMove = (socket: Socket, io: Server, payload: any) => {
   const { roomId, move } = payload;
-  const gameManager = GameManager.getInstance();
-  const session = gameManager.getSession(roomId);
+  const matchmakingService = MatchmakingService.getInstance();
+  const session = matchmakingService.getSession(roomId);
   if (!session) {
     return socket.emit('error', 'Game not found');
-  }
-  if (termination === 'TIMEOUT') {
-    let result = session.Chessgame?.checkTimeout();
-    if (result?.isGameOver) {
-      let winner =
-        result.winner === 'w' ? session.white?.id : session.black?.id;
-      handleGameEnd(session, roomId, io, 'TIMEOUT', winner);
-    }
-  }
-  if (termination === 'RESIGNATION') {
-    handleGameEnd(session, roomId, io, 'RESIGNATION', socket.id);
   }
 
   // 1. Structural Validation (TypeBox)
@@ -34,16 +19,13 @@ export const handleMove = (
   }
 
   // 3. Rule Validation & Execution (chess.js)
-  if (session.Chessgame)
+  if (session)
     try {
-      const result = session.Chessgame.makeMove(move.from, move.to);
+      const result = chessgame.makeMove(session.gameState, move);
 
-      if (result) {
+      if (result.success) {
         // 4. Broadcast the new state
-        io.to(roomId).emit('gameUpdate', result);
-        if (result.isCheckmate) {
-          handleGameEnd(session, roomId, io, 'CHECKMATE');
-        }
+        io.to(roomId).emit('gameUpdate', result.state);
       } else {
         socket.emit('error', 'Illegal chess move');
       }

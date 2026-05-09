@@ -143,3 +143,10 @@ export const GameSessionSchema = Type.Object({
   lastActive: Type.Number(),
 });
 export type GameSession = Static<typeof GameSessionSchema>;
+
+export const MoveSchema = Type.Object({
+  from: Type.String(),
+  to: Type.String(),
+  promotion: Type.Optional(PieceTypeSchema),
+});
+export type Move = Static<typeof MoveSchema>;
