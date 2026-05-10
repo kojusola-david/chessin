@@ -14,9 +14,8 @@ import cookie from 'cookie';
 import prisma from './services/Prisma';
 import 'dotenv/config';
 import { PresenceService } from './services/PresenceService';
-import { GameManager } from './services/GameManager';
-import { handleGameEnd } from './controllers/gameEndController';
-
+import GameEndService from './services/GameEndService.js';
+import GameSessionService from './services/GameSessionService.js';
 // --- Schemas ---
 const MessageSchema = Type.Object({
   sender: Type.String(),
@@ -158,7 +157,7 @@ const start = async () => {
 
       const userId = socket.data.userId;
       const presenceService = PresenceService.getInstance();
-      const gameManager = GameManager.getInstance();
+      const gameSessionService = GameSessionService.getInstance();
       presenceService.addUser(userId, socket.id);
 
       //TODO: payload interface is not yet defined
@@ -168,17 +167,15 @@ const start = async () => {
 
       socket.on('makeMove', (payload) => handleMove(socket, io, payload));
 
-      socket.on('resign', (payload) =>
-        handleMove(socket, io, payload, 'RESIGNATION')
-      );
-      socket.on('claim_timeout', (payload) => {
-        handleMove(socket, io, payload, 'TIMEOUT');
-      });
+      socket.on('resign', (payload) => handleMove(socket, io, payload));
+      // socket.on('claim_timeout', (payload) => {
+      //   handleMove(socket, io, payload, 'TIMEOUT');
+      // });
 
       socket.on('disconnect', (reason) => {
         presenceService.removeUser(userId, socket.id);
 
-        const gameSession = gameManager.getSessionByUserId(userId);
+        const gameSession = gameSessionService.getSessionByUserId(userId);
         if (gameSession) {
           handleGameDisconnect(socket, io);
         }

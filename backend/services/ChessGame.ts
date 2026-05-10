@@ -37,11 +37,20 @@ export class ChessGame {
     this.game.setHeader('Variant', 'Standard');
   }
 
-  finalizeGame(result: string, termination: string) {
-    this.game.setHeader('Result', result);
-    this.game.setHeader('Termination', termination);
+  finalizeGame(state: GameState) {
+    const game = new Chess(state.fen);
+    let result;
+    if (!state.winner) {
+      result = `Draw by ${state.status}`;
+    } else if (state.winner === 'w') {
+      result = `White wins by ${state.status}`;
+    } else if (state.winner === 'b') {
+      result = `Black wins by ${state.status}`;
+    }
+    if (result) game.setHeader('Result', result);
+    if (state.status) game.setHeader('Termination', state.status);
 
-    return this.game.pgn();
+    return this.toGameState(game);
   }
 
   public initializeGameState(): GameState {
@@ -55,6 +64,23 @@ export class ChessGame {
       timeClass: 'RAPID',
     };
   }
+
+  public toGameState(game: Chess): GameState {
+    return {
+      fen: game.fen(),
+      moves: game.moves(),
+      turn: game.turn(),
+      whiteTime: 0,
+      blackTime: 0,
+      lastMoveTimestamp: Date.now(),
+      timeClass: 'RAPID',
+    };
+  }
+
+  // public serializeGame(gameState: GameState): Chess{
+  //   const game = new Chess(gameState.fen);
+  //   return game;
+  // }
 
   public makeMove(gameState: GameState, move: Move): MoveResult {
     const game = new Chess(gameState.fen);
