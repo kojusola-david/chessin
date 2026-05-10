@@ -6,21 +6,18 @@ import {
   GameState,
 } from '@chessin/shared';
 import LobbyStore from '../stores/LobbyStore';
-import SessionStore from '../stores/SessionStore';
 import { nanoid } from 'nanoid';
+import GameSessionService from './GameSessionService';
 
 export default class MatchmakingService {
   private static instance: MatchmakingService;
 
-  private constructor(
-    private lobby: LobbyStore,
-    private sessions: SessionStore
-  ) {}
+  private gameSessionService = GameSessionService.getInstance();
+  private constructor(private lobby: LobbyStore) {}
   public static getInstance() {
     if (!MatchmakingService.instance) {
       const lobby = new LobbyStore();
-      const sessions = new SessionStore();
-      MatchmakingService.instance = new MatchmakingService(lobby, sessions);
+      MatchmakingService.instance = new MatchmakingService(lobby);
     }
     return MatchmakingService.instance;
   }
@@ -33,7 +30,9 @@ export default class MatchmakingService {
     const existingRequest = this.getRequestByPlayerId(player.id);
     if (existingRequest) return existingRequest;
 
-    const existingSession = this.sessions.getByUserId(player.id);
+    const existingSession = this.gameSessionService.getSessionByUserId(
+      player.id
+    );
     if (existingSession) throw new Error('Player already in a game');
 
     const roomId = nanoid(6);
@@ -65,7 +64,7 @@ export default class MatchmakingService {
         blackTime: 10 * 60 * 1000,
         lastMoveTimestamp: Date.now(),
       };
-      const gameSession = this.sessions.createSession(
+      const gameSession = this.gameSessionService.createSession(
         roomId,
         request.player,
         player,
@@ -88,19 +87,5 @@ export default class MatchmakingService {
 
   public getActiveRequests(): GameRequest[] {
     return this.lobby.getLobby();
-  }
-
-  public getSession(roomId: string): GameSession | undefined {
-    return this.sessions.getSession(roomId);
-  }
-
-  public removeSession(roomId: string): void {
-    this.sessions.removeSession(roomId);
-  }
-  public has(roomId: string): boolean {
-    return this.sessions.has(roomId);
-  }
-  public getSessionByUserId(userId: string): GameSession | undefined {
-    return this.sessions.getByUserId(userId);
   }
 }

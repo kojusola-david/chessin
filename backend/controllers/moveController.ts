@@ -1,5 +1,6 @@
 import { Socket, Server } from 'socket.io';
 import MatchmakingService from '../services/MatchmakingService';
+import GameSessionService from '../services/GameSessionService';
 import { MoveRequestSchema } from '@chessin/shared';
 import { Value } from '@sinclair/typebox/value';
 import { ChessGame } from '../services/ChessGame';
@@ -8,7 +9,8 @@ const chessgame = new ChessGame();
 export const handleMove = (socket: Socket, io: Server, payload: any) => {
   const { roomId, move } = payload;
   const matchmakingService = MatchmakingService.getInstance();
-  const session = matchmakingService.getSession(roomId);
+  const gameSessionService = GameSessionService.getInstance();
+  const session = gameSessionService.getSession(roomId);
   if (!session) {
     return socket.emit('error', 'Game not found');
   }
